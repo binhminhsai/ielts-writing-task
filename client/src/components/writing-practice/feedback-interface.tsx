@@ -21,7 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 
 // Possible issues in essay
@@ -52,27 +52,50 @@ interface HighlightData {
   };
 }
 
-// Mock feedback data
+// Feedback data interface
 interface FeedbackData {
-  scores: {
-    taskAchievement: number;
-    coherenceCohesion: number;
-    lexicalResource: number;
-    grammar: number;
-    overall: number;
+  task: string;
+  criteria_scores: {
+    "Task Achievement": {
+      score: number;
+      feedback: string;
+      strengths: string[];
+      areas_for_improvement: string[];
+      specific_suggestions: string[];
+    };
+    "Coherence and Cohesion": {
+      score: number;
+      feedback: string;
+      strengths: string[];
+      areas_for_improvement: string[];
+      specific_suggestions: string[];
+    };
+    "Lexical Resource": {
+      score: number;
+      feedback: string;
+      strengths: string[];
+      areas_for_improvement: string[];
+      vocabulary_enhancement: string[];
+    };
+    "Grammatical Range and Accuracy": {
+      score: number;
+      feedback: string;
+      strengths: string[];
+      areas_for_improvement: string[];
+      grammar_focus: string[];
+    };
   };
-  stats: {
+  overall_assessment: {
+    score: number;
+    summary: string;
+    specific_suggestions: string[];
+    vocabulary_enhancement: string[];
+    grammar_focus: string[];
+    next_steps: string[];
+  };
+  stats?: {
     totalWords: number;
     completionTime: string;
-    vocabularyRange: string;
-    grammarAccuracy: string;
-  };
-  feedback: {
-    strengths: string[];
-    improvements: string[];
-  };
-  analysis?: {
-    sentences: Record<string, SentenceIssue>;
   };
 }
 
@@ -88,6 +111,11 @@ export function FeedbackInterface({
   onNextPractice,
 }: FeedbackInterfaceProps) {
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [feedbackData, setFeedbackData] = useState<FeedbackData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+const [completionTime, setCompletionTime] = useState<string>('N/A');
 
   // Example sustainable development essay - 300 words
   const sampleEssay = `In recent years, sustainable development has become one of the most critical issues facing governments worldwide.
@@ -109,84 +137,6 @@ Countries must invest in renewable energy, promote eco-friendly industries, and 
 This approach ensures that economic progress does not compromise the planet's health for future generations.
 To conclude, while economic growth remains important for human development, it must be balanced with environmental sustainability.
 Only through careful planning and responsible policies can societies achieve prosperity without destroying the natural world that supports all life.`;
-
-  // This would normally come from an API based on essay analysis
-  // Using sample data that follows the design in the screenshots
-  const feedbackData: FeedbackData = {
-    scores: {
-      taskAchievement: 7.0,
-      coherenceCohesion: 7.0,
-      lexicalResource: 7.0,
-      grammar: 7.0,
-      overall: 7.0,
-    },
-    stats: {
-      totalWords: sampleEssay.split(/\s+/).filter(Boolean).length || 299,
-      completionTime: "35:22",
-      vocabularyRange: "Good",
-      grammarAccuracy: "Good",
-    },
-    feedback: {
-      strengths: [
-        "Strong introduction that clearly presents both viewpoints",
-        "Good use of topic sentences and paragraph structure",
-        "Effective use of transition words to connect ideas",
-        "Clear personal opinion in the conclusion",
-      ],
-      improvements: [
-        "Some examples could be more specific and developed",
-        "A few grammar errors in complex sentences",
-        "Consider expanding your vocabulary range for academic contexts",
-        "Some sentences are too long and could be broken down for clarity",
-      ],
-    },
-    analysis: {
-      sentences: {
-        "In recent years, sustainable development has become one of the most critical issues facing governments worldwide.": {
-          type: 'good',
-          original: "In recent years, sustainable development has become one of the most critical issues facing governments worldwide."
-        },
-        "This essay will examine both perspectives and present my own viewpoint.": {
-          type: 'good',
-          original: "This essay will examine both perspectives and present my own viewpoint."
-        },
-        "They believe that industrial expansion create jobs and generate income, which allow people to meet their basic needs.": {
-          type: 'error',
-          original: "They believe that industrial expansion create jobs and generate income, which allow people to meet their basic needs.",
-          correction: "They believe that industrial expansion creates jobs and generates income, which allows people to meet their basic needs.",
-          reason: "Subject-verb agreement errors affect the overall grammatical accuracy score. The singular subject 'industrial expansion' requires the verbs 'creates' and 'generates' rather than 'create' and 'generate'.",
-          issueDetail: "Grammar - subject-verb agreement error (expansion creates, not create)"
-        },
-        "These nations has lifted millions of people out of poverty and improved infrastructure substantially.": {
-          type: 'error',
-          original: "These nations has lifted millions of people out of poverty and improved infrastructure substantially.",
-          correction: "These nations have lifted millions of people out of poverty and improved infrastructure substantially.",
-          reason: "The plural subject 'These nations' requires the plural auxiliary verb 'have' rather than the singular 'has'. This is a fundamental grammar rule that affects the overall accuracy score.",
-          issueDetail: "Grammar - incorrect auxiliary verb (nations have, not has)"
-        },
-        "For instance, excessive carbon emissions from factories and vehicles has contributed to global warming and extreme weather events.": {
-          type: 'error',
-          original: "For instance, excessive carbon emissions from factories and vehicles has contributed to global warming and extreme weather events.",
-          correction: "For instance, excessive carbon emissions from factories and vehicles have contributed to global warming and extreme weather events.",
-          reason: "The plural subject 'emissions' requires the plural auxiliary verb 'have' rather than the singular 'has'. This grammatical error affects sentence clarity and scoring.",
-          issueDetail: "Grammar - plural subject needs plural verb (emissions have, not has)"
-        },
-        "Many scientists warn that without immediate action, the environmental damage will be irreversible and affect future generations severely.": {
-          type: 'suggestion',
-          original: "Many scientists warn that without immediate action, the environmental damage will be irreversible and affect future generations severely.",
-          correction: "Many scientists warn that without immediate action, environmental damage will be irreversible and severely affect future generations.",
-          reason: "Repositioning 'severely' improves sentence flow and sounds more natural. Academic writing benefits from varied sentence structures and natural word order.",
-          issueDetail: "The adverb placement could be more natural"
-        },
-        "However, I think governments should prioritize sustainable growth over rapid expansion.": {
-          type: 'good',
-          original: "However, I think governments should prioritize sustainable growth over rapid expansion."
-        }
-      }
-    }
-  };
-
-
 
   // Enhanced highlighting data - 2 sentences per color type
   const highlightMapping: Record<string, HighlightData> = {
@@ -257,6 +207,164 @@ Only through careful planning and responsible policies can societies achieve pro
         bandImpact: 'Improves Task Response and Coherence/Cohesion'
       }
     }
+  };
+
+const handleStartWriting = () => {
+  setStartTime(new Date());
+};
+
+// When calculating completion time
+const calculateCompletionTime = () => {
+  if (!startTime) return 'N/A';
+  const endTime = new Date();
+  const diffMs = endTime.getTime() - startTime.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const timeStr = `${diffMins} min${diffMins !== 1 ? 's' : ''}`;
+  setCompletionTime(timeStr);
+  return timeStr;
+};
+  useEffect(() => {
+  const evaluateEssay = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('https://agentwp-api.aihubproduction.com/evaluate-essay', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          prompt: "IELTS Writing Task 2 Prompt",
+          essay: essayContent,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      console.log('API Response:', result); // Add this line
+      
+      if (result.success && result.data?.data) {
+        const feedback = result.data.data;
+        const calculatedTime = calculateCompletionTime();
+        if (!feedback.stats) {
+          feedback.stats = {
+            totalWords: essayContent.split(/\s+/).filter(Boolean).length,
+            completionTime: calculatedTime // Default value
+          };
+        }
+        setFeedbackData(feedback);
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (err) {
+      console.error('Evaluation error:', err);
+      setError(err instanceof Error ? err.message : 'Evaluation failed');
+      const sampleData = getSampleFeedbackData(essayContent);
+      sampleData.stats = {
+        totalWords: essayContent.split(/\s+/).filter(Boolean).length,
+        completionTime: 'N/A' // Default value
+      };
+      setFeedbackData(sampleData);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  evaluateEssay();
+}, [essayContent]);
+
+  const getSampleFeedbackData = (essay: string): FeedbackData => {
+    const wordCount = essay.split(/\s+/).filter(Boolean).length || 0;
+    
+    return {
+      task: "IELTS Writing Task 2",
+      criteria_scores: {
+        "Task Achievement": {
+          score: 7.0,
+          feedback: "The essay addresses all parts of the prompt, discussing both views and providing a clear opinion. The arguments for both sides are relevant and supported with valid points and examples.",
+          strengths: [
+            "Strong introduction that clearly presents both viewpoints",
+            "Good use of topic sentences and paragraph structure"
+          ],
+          areas_for_improvement: [
+            "Some examples could be more specific and developed",
+            "A few grammar errors in complex sentences"
+          ],
+          specific_suggestions: [
+            "Provide more concrete examples to support arguments",
+            "Ensure all examples directly relate to the main points"
+          ]
+        },
+        "Coherence and Cohesion": {
+          score: 7.0,
+          feedback: "The essay presents information and ideas logically with a clear progression. A range of cohesive devices are used appropriately.",
+          strengths: [
+            "Uses appropriate cohesive devices to connect ideas",
+            "Ideas progress logically from one viewpoint to the next"
+          ],
+          areas_for_improvement: [
+            "Ensure clear paragraph breaks to separate different ideas"
+          ],
+          specific_suggestions: [
+            "Use more transitional phrases between paragraphs"
+          ]
+        },
+        "Lexical Resource": {
+          score: 7.0,
+          feedback: "The essay demonstrates a good range of vocabulary used flexibly and accurately. There is a sufficient range of less common lexical items.",
+          strengths: [
+            "Uses a good range of topic-specific vocabulary accurately",
+            "Includes less common lexical items effectively"
+          ],
+          areas_for_improvement: [
+            "Consider incorporating a wider range of sophisticated synonyms"
+          ],
+          vocabulary_enhancement: [
+            "Consider expanding your vocabulary range for academic contexts",
+            "Use more sophisticated synonyms to avoid repetition"
+          ]
+        },
+        "Grammatical Range and Accuracy": {
+          score: 7.0,
+          feedback: "The essay uses a good range of complex sentence structures with a high level of accuracy. There are very few grammatical errors, and punctuation is generally correct.",
+          strengths: [
+            "Demonstrates consistent control over complex sentence structures",
+            "High level of grammatical accuracy with very few errors"
+          ],
+          areas_for_improvement: [
+            "Continue practicing varied sentence structures"
+          ],
+          grammar_focus: [
+            "Continue to practice using a variety of complex sentence structures",
+            "Ensure consistent use of parallel structures when listing items"
+          ]
+        }
+      },
+      overall_assessment: {
+        score: 7.0,
+        summary: "Overall, this is a strong essay that demonstrates good control of the English language and meets the requirements for a Band 7 score. The arguments are well-developed and supported, though some areas could benefit from more detailed examples and slightly more sophisticated vocabulary.",
+        specific_suggestions: [
+          "Master Paragraphing: Practice writing essays with clear paragraph structure",
+          "Essay Structure Drills: Outline your paragraph structure before writing"
+        ],
+        vocabulary_enhancement: [
+          "Review academic vocabulary lists for common IELTS topics"
+        ],
+        grammar_focus: [
+          "Practice complex sentence structures with clauses"
+        ],
+        next_steps: [
+          "Review Band Descriptors: Pay attention to scoring criteria",
+          "Timed practice essays to improve speed and accuracy"
+        ]
+      }
+    };
   };
 
   // Helper function to highlight sentences with multi-color system
@@ -442,6 +550,35 @@ Only through careful planning and responsible policies can societies achieve pro
     return (score / 9) * 100;
   };
 
+  // Add loading and error states
+  if (isLoading) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <p className="mt-4 text-lg">Evaluating your essay...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center h-64">
+        <AlertTriangle className="h-12 w-12 text-red-500" />
+        <p className="mt-4 text-lg text-red-500">{error}</p>
+        <p className="text-sm text-gray-600">Showing sample evaluation data</p>
+      </div>
+    );
+  }
+
+  if (!feedbackData) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center h-64">
+        <XCircle className="h-12 w-12 text-red-500" />
+        <p className="mt-4 text-lg">No evaluation data available</p>
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
       <div className="p-6">
@@ -464,65 +601,102 @@ Only through careful planning and responsible policies can societies achieve pro
         <div className="column flex flex-col gap-4">
             {/* Overall Band Score */}
 
-
             {/* Score Breakdown */}
             <div className="box bg-[#FAFAFA] rounded-lg border border-black p-3 h-full flex flex-col">
-              <h2 className="text-lg font-bold mb-3">Score Breakdown</h2>
+      <h2 className="text-lg font-bold mb-3">Score Breakdown</h2>
 
-              <div className="flex flex-col justify-between flex-1 gap-3">
-                {/* Task Response */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold">Task Response</span>
-                    <span className="text-[#44b9b0] font-bold">7.0</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-[18px]">
-                    <div className="bg-[#44b9b0] h-[18px] rounded-full" style={{ width: '70%' }}></div>
-                  </div>
-                </div>
-
-                {/* Coherence & Cohesion */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold">Coherence & Cohesion</span>
-                    <span className="text-[#44b9b0] font-bold">8.0</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-[18px]">
-                    <div className="bg-[#44b9b0] h-[18px] rounded-full" style={{ width: '80%' }}></div>
-                  </div>
-                </div>
-
-                {/* Lexical Resource */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold">Lexical Resource</span>
-                    <span className="text-[#44b9b0] font-bold">7.0</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-[18px]">
-                    <div className="bg-[#44b9b0] h-[18px] rounded-full" style={{ width: '70%' }}></div>
-                  </div>
-                </div>
-
-                {/* Grammatical Range & Accuracy */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold">Grammatical Range & Accuracy</span>
-                    <span className="text-[#44b9b0] font-bold">7.0</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-[18px]">
-                    <div className="bg-[#44b9b0] h-[18px] rounded-full" style={{ width: '70%' }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-xl font-bold">Overall Band Score</span>
-                  <span className="text-[#44b9b0] text-4xl font-extrabold">7.5</span>
-                </div>
-              </div>
-            </div>
+      <div className="flex flex-col justify-between flex-1 gap-3">
+        {/* Task Response */}
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <span className="font-bold">Task Response</span>
+            <span className="text-[#44b9b0] font-bold">
+              {feedbackData?.criteria_scores?.["Task Achievement"]?.score?.toFixed(1) || '0.0'}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-[18px]">
+            <div 
+              className="bg-[#44b9b0] h-[18px] rounded-full" 
+              style={{ 
+                width: `${getScorePercentage(
+                  feedbackData?.criteria_scores?.["Task Achievement"]?.score || 0
+                )}%` 
+              }}
+            ></div>
+          </div>
         </div>
+
+        {/* Coherence & Cohesion */}
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <span className="font-bold">Coherence & Cohesion</span>
+            <span className="text-[#44b9b0] font-bold">
+              {feedbackData?.criteria_scores?.["Coherence and Cohesion"]?.score?.toFixed(1) || '0.0'}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-[18px]">
+            <div 
+              className="bg-[#44b9b0] h-[18px] rounded-full" 
+              style={{ 
+                width: `${getScorePercentage(
+                  feedbackData?.criteria_scores?.["Coherence and Cohesion"]?.score || 0
+                )}%` 
+              }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Lexical Resource */}
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <span className="font-bold">Lexical Resource</span>
+            <span className="text-[#44b9b0] font-bold">
+              {feedbackData?.criteria_scores?.["Lexical Resource"]?.score?.toFixed(1) || '0.0'}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-[18px]">
+            <div 
+              className="bg-[#44b9b0] h-[18px] rounded-full" 
+              style={{ 
+                width: `${getScorePercentage(
+                  feedbackData?.criteria_scores?.["Lexical Resource"]?.score || 0
+                )}%` 
+              }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Grammatical Range & Accuracy */}
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <span className="font-bold">Grammatical Range & Accuracy</span>
+            <span className="text-[#44b9b0] font-bold">
+              {feedbackData?.criteria_scores?.["Grammatical Range and Accuracy"]?.score?.toFixed(1) || '0.0'}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-[18px]">
+            <div 
+              className="bg-[#44b9b0] h-[18px] rounded-full" 
+              style={{ 
+                width: `${getScorePercentage(
+                  feedbackData?.criteria_scores?.["Grammatical Range and Accuracy"]?.score || 0
+                )}%` 
+              }}
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="flex justify-between items-center">
+          <span className="text-xl font-bold">Overall Band Score</span>
+          <span className="text-[#44b9b0] text-4xl font-extrabold">
+            {feedbackData?.overall_assessment?.score?.toFixed(1) || '0.0'}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
 
         {/* Right Column */}
         <div className="column flex flex-col gap-4">
@@ -537,7 +711,7 @@ Only through careful planning and responsible policies can societies achieve pro
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <p className="text-gray-700 leading-relaxed text-sm">
-                        This essay effectively addresses the prompt, presenting both views and a clear, well-supported opinion. The lexical resource and grammatical range and accuracy are strong, demonstrating good control over language. However, the most significant limitation is the complete lack of paragraphing. Presenting the entire essay as a single block of text severely impacts the Coherence and Cohesion score, making the logical progression harder for the reader to follow, despite the ideas being logically ordered.
+                        {feedbackData?.overall_assessment?.summary || 'No summary available'}
                       </p>
                     </AccordionContent>
                   </AccordionItem>
@@ -548,8 +722,12 @@ Only through careful planning and responsible policies can societies achieve pro
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <ul className="text-gray-700 leading-relaxed space-y-1 text-sm">
-                        <li>• The absolute top priority for improvement is to format the essay into clear, distinct paragraphs. This is fundamental for IELTS writing.</li>
-                        <li>• Practice paragraphing: write topic sentences for each body paragraph that clearly state its main idea.</li>
+                        {feedbackData.overall_assessment.specific_suggestions.map((item, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-sm">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
                       </ul>
                     </AccordionContent>
                   </AccordionItem>
@@ -560,8 +738,12 @@ Only through careful planning and responsible policies can societies achieve pro
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <ul className="text-gray-700 leading-relaxed space-y-1 text-sm">
-                        <li>• For discussions on government spending, consider terms like fiscal policy, public funds, resource allocation, infrastructure development.</li>
-                        <li>• When talking about balance, compromise, middle ground, optimal resource distribution could be useful.</li>
+                        {feedbackData.overall_assessment.vocabulary_enhancement.map((item, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-sm">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
                       </ul>
                     </AccordionContent>
                   </AccordionItem>
@@ -572,8 +754,12 @@ Only through careful planning and responsible policies can societies achieve pro
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <ul className="text-gray-700 leading-relaxed space-y-1 text-sm">
-                        <li>• No specific grammar errors were frequent; the focus should be on maintaining the current high level of accuracy.</li>
-                        <li>• Continue to practice using a variety of complex sentence structures, ensuring each clause is correctly formed and linked.</li>
+                        {feedbackData.overall_assessment.grammar_focus.map((item, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-sm">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
                       </ul>
                     </AccordionContent>
                   </AccordionItem>
@@ -584,9 +770,12 @@ Only through careful planning and responsible policies can societies achieve pro
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <ul className="text-gray-700 leading-relaxed space-y-1 text-sm">
-                        <li>• Master Paragraphing: Practice writing essays where you consciously separate your introduction, each body paragraph, and conclusion.</li>
-                        <li>• Essay Structure Drills: For future essays, outline your paragraph structure before writing (e.g., Paragraph 1: Intro. Paragraph 2: View 1. Paragraph 3: View 2. Paragraph 4: Opinion/Conclusion).</li>
-                        <li>• Review Band Descriptors: Pay close attention to the Coherence and Cohesion band descriptors, specifically how paragraphing impacts clarity and logical progression.</li>
+                        {feedbackData.overall_assessment.next_steps.map((item, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-sm">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
                       </ul>
                     </AccordionContent>
                   </AccordionItem>
@@ -600,16 +789,16 @@ Only through careful planning and responsible policies can societies achieve pro
               <div className="stat-row flex justify-around mt-2">
                 <div className="text-center">
                   <div className="stat-label font-bold">Word Count</div>
-                  <div className={`stat-value font-bold text-2xl mt-1 ${feedbackData.stats.totalWords < 250 ? 'text-red-500' : ''}`}>
-                    {feedbackData.stats.totalWords}
+                  <div className={`stat-value font-bold text-2xl mt-1 ${feedbackData.stats?.totalWords && feedbackData.stats.totalWords < 250 ? 'text-red-500' : ''}`}>
+                    {feedbackData.stats?.totalWords || 0}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="stat-label font-bold">Completion Time</div>
-                  <div className="stat-value font-bold text-2xl mt-1">
-                    {feedbackData.stats.completionTime}
-                  </div>
-                </div>
+  <div className="stat-label font-bold">Completion Time</div>
+  <div className="stat-value font-bold text-2xl mt-1">
+    {feedbackData.stats?.completionTime || completionTime}
+  </div>
+</div>
               </div>
             </div>
         </div>
@@ -656,7 +845,7 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-blue-600">Feedback</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  The essay addresses all parts of the prompt, discussing both views and providing a clear opinion. The arguments for both sides are relevant and supported with valid points and examples (e.g., "reduce commute times, encourage more people to use public transit, and ultimately reduce traffic congestion and air pollution" for public transport, and "underfunded hospitals and overcrowded schools" for other priorities). The opinion, "governments should strike a balance," is clear and logically supported. However, the essay's presentation as a single continuous paragraph impacts how effectively the position is presented throughout, making it less clear to the reader where one argument ends and another begins.
+                  {feedbackData.criteria_scores["Task Achievement"].feedback}
                 </p>
               </div>
 
@@ -667,18 +856,12 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-green-600">Strengths</h3>
                 </div>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Clearly addresses all parts of the prompt: discusses both views and states an opinion.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Develops relevant and supported arguments for both perspectives, such as "efficient transportation can enhance productivity and improve quality of life for millions."</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Provides a nuanced and well-reasoned opinion: "governments should strike a balance."</span>
-                  </li>
+                  {feedbackData.criteria_scores["Task Achievement"].strengths.map((strength, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-sm">•</span>
+                      <span>{strength}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -689,32 +872,12 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-yellow-600">Areas for Improvement</h3>
                 </div>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>While content is present, the lack of distinct paragraphs hinders the clear presentation and development of each idea.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>The overall structure, being one long paragraph, makes it less effective in demonstrating full task achievement regarding organization.</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Specific Suggestions */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="h-5 w-5 text-orange-600" />
-                  <h3 className="text-lg font-semibold text-orange-600">Specific Suggestions</h3>
-                </div>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Break the essay into clear, distinct paragraphs: an introduction, a body paragraph for the first view, a body paragraph for the second view, and a conclusion that restates your opinion.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>For example, separate the discussion of "Some people argue..." into one paragraph and "On the other hand, others think..." into another.</span>
-                  </li>
+                  {feedbackData.criteria_scores["Task Achievement"].areas_for_improvement.map((improvement, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-sm">•</span>
+                      <span>{improvement}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -729,7 +892,7 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-blue-600">Feedback</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  The essay presents information and ideas logically to some extent, with a clear progression from discussing the first view, to the second, and then stating an opinion. A range of cohesive devices ('Some people argue that...', 'On the other hand,', 'For instance,', 'In my opinion,', 'Ultimately,') are used appropriately. However, the most significant weakness is the complete lack of paragraphing, as the entire essay is written as one continuous block of text. This severely impedes readability and makes it difficult for the reader to follow the logical flow and distinguish between separate ideas, thereby impacting the overall cohesion and clarity.
+                  {feedbackData.criteria_scores["Coherence and Cohesion"].feedback}
                 </p>
               </div>
 
@@ -740,18 +903,12 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-green-600">Strengths</h3>
                 </div>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Uses appropriate cohesive devices such as 'On the other hand,' and 'In my opinion,' to connect ideas.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Ideas progress logically from one viewpoint to the next, then to the personal opinion.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Referencing like 'They believe' and 'These people argue' is used correctly.</span>
-                  </li>
+                  {feedbackData.criteria_scores["Coherence and Cohesion"].strengths.map((strength, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-sm">•</span>
+                      <span>{strength}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -762,32 +919,12 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-yellow-600">Areas for Improvement</h3>
                 </div>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>The complete absence of clear paragraph breaks is a major weakness, making the essay appear as a single block of text.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Despite logical progression of ideas, the lack of physical separation creates a barrier to easy comprehension.</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Specific Suggestions */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="h-5 w-5 text-orange-600" />
-                  <h3 className="text-lg font-semibold text-orange-600">Specific Suggestions</h3>
-                </div>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Crucially, separate your essay into at least four distinct paragraphs: Introduction, Body Paragraph 1 (for the first view), Body Paragraph 2 (for the second view), and Conclusion.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Introduce the topic and outline the essay in the first paragraph. Dedicate the second paragraph to the arguments for investing in faster public transportation. The third paragraph should focus on the arguments for other priorities. The final paragraph should present your opinion and a summary.</span>
-                  </li>
+                  {feedbackData.criteria_scores["Coherence and Cohesion"].areas_for_improvement.map((improvement, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-sm">•</span>
+                      <span>{improvement}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -802,8 +939,7 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-blue-600">Feedback</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  The essay demonstrates a good range of vocabulary used flexibly and accurately. There is a sufficient range of less common lexical items, such as "significantly reduce commute times," "enhance productivity," "pressing issues," "underfunded hospitals," "overcrowded schools," "national development," "strike a balance," "allocating resources wisely," and "planning holistically for sustainable development."
-                  There are very few minor errors in word choice or form, which do not impede communication. The vocabulary is appropriate for the topic and helps convey the meaning precisely.
+                  {feedbackData.criteria_scores["Lexical Resource"].feedback}
                 </p>
               </div>
 
@@ -814,18 +950,12 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-green-600">Strengths</h3>
                 </div>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Uses a good range of topic-specific vocabulary accurately (e.g., "traffic congestion", "air pollution", "commute times").</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Includes less common lexical items like "enhance productivity" and "strike a balance" effectively.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Vocabulary is precise and contributes to clear meaning.</span>
-                  </li>
+                  {feedbackData.criteria_scores["Lexical Resource"].strengths.map((strength, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-sm">•</span>
+                      <span>{strength}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -836,28 +966,12 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-yellow-600">Areas for Improvement</h3>
                 </div>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>While generally strong, consider incorporating a wider range of sophisticated synonyms to avoid minor repetitions, though this is not a significant issue here.</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Vocabulary Enhancement */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="h-5 w-5 text-purple-600" />
-                  <h3 className="text-lg font-semibold text-purple-600">Vocabulary Enhancement</h3>
-                </div>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>"invest" could sometimes be varied with "allocate funds to" or "channel resources into".</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>"basic services" could occasionally be "essential amenities" or "fundamental provisions".</span>
-                  </li>
+                  {feedbackData.criteria_scores["Lexical Resource"].areas_for_improvement.map((improvement, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-sm">•</span>
+                      <span>{improvement}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -872,7 +986,7 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-blue-600">Feedback</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  The essay uses a good range of complex sentence structures with a high level of accuracy. Examples include conditional sentences ("In large cities where daily commuting takes hours, efficient transportation can enhance productivity...") and sentences with multiple clauses ("They believe that improving transport speed can significantly reduce commute times, encourage more people to use public transit, and ultimately reduce traffic congestion and air pollution."). There are very few grammatical errors, and punctuation is generally correct. Errors are minor and do not prevent communication.
+                  {feedbackData.criteria_scores["Grammatical Range and Accuracy"].feedback}
                 </p>
               </div>
 
@@ -883,18 +997,12 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-green-600">Strengths</h3>
                 </div>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Demonstrates consistent control over complex sentence structures.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>High level of grammatical accuracy with very few errors (e.g., correct use of apostrophe in "government's limited budget").</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Punctuation is largely correct and supports clarity.</span>
-                  </li>
+                  {feedbackData.criteria_scores["Grammatical Range and Accuracy"].strengths.map((strength, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-sm">•</span>
+                      <span>{strength}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -905,28 +1013,12 @@ Only through careful planning and responsible policies can societies achieve pro
                   <h3 className="text-lg font-semibold text-yellow-600">Areas for Improvement</h3>
                 </div>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>No significant grammatical errors to highlight for improvement; maintaining this high level of accuracy is key.</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Grammar Focus */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertTriangle className="h-5 w-5 text-indigo-600" />
-                  <h3 className="text-lg font-semibold text-indigo-600">Grammar Focus</h3>
-                </div>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Continue practicing constructing varied complex and compound sentences to further enhance grammatical range.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sm">•</span>
-                    <span>Ensure consistent use of parallel structures when listing items (e.g., "reduce commute times, encourage more people to use public transit, and ultimately reduce traffic congestion and air pollution" – this is already well done).</span>
-                  </li>
+                  {feedbackData.criteria_scores["Grammatical Range and Accuracy"].areas_for_improvement.map((improvement, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-sm">•</span>
+                      <span>{improvement}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -937,9 +1029,7 @@ Only through careful planning and responsible policies can societies achieve pro
       {/* Grammar Checker Section */}
       <div className="container max-w-[1100px] mx-auto mb-6">
         <h2 className="text-2xl font-bold mb-4">Grammar Checker</h2>
-
-        {/* Essay with highlighted sections */}
-        {highlightEssay(sampleEssay)}
+        {highlightEssay(essayContent || sampleEssay)}
       </div>
 
       <div className="flex flex-wrap gap-4 justify-center">
@@ -985,7 +1075,6 @@ Only through careful planning and responsible policies can societies achieve pro
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       </div>
     </TooltipProvider>
   );
