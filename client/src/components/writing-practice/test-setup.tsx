@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateRandomTopic } from "@/data/topics";
 
 export type WritingTestType = 
   | "ielts-task2" 
@@ -41,6 +40,43 @@ export function TestSetup({ onStart }: TestSetupProps) {
   const [fixedTestType, setFixedTestType] = useState<WritingTestType | null>(null);
   const [timeLimit, setTimeLimit] = useState(30);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generateQuestionFromAPI = async (userTopic: string) => {
+    setIsGenerating(true);
+    setErrorMessage("");
+    
+    try {
+      const response = await fetch('https://agentwp-api.aihubproduction.com/generate-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          topic: userTopic
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.data?.data?.question) {
+        setTopic(result.data.data.question);
+        setFixedTestType(testType);
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('Error generating question:', error);
+      setErrorMessage("Failed to generate question. Please try again or enter your own question.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleGenerateTopic = () => {
     const textareaValue = (document.getElementById('topic') as HTMLTextAreaElement).value;
@@ -48,19 +84,23 @@ export function TestSetup({ onStart }: TestSetupProps) {
       setErrorMessage("Vui lòng nhập Topic/Question trước khi nhấn nút Generate question");
       return;
     }
-    setErrorMessage("");
-    // Sử dụng với 2 tham số vì hàm generateRandomTopic chỉ nhận 2 tham số
-    const randomTopic = generateRandomTopic(testType, difficulty);
-    setTopic(randomTopic);
-    setFixedTestType(testType);
+    
+    generateQuestionFromAPI(textareaValue.trim());
   };
 
   const handleRandomQuestion = () => {
-    // Tạo câu hỏi random hoàn toàn không cần input từ user
-    setErrorMessage("");
-    const randomTopic = generateRandomTopic(testType, difficulty);
-    setTopic(randomTopic);
-    setFixedTestType(testType);
+    // Generate a random topic based on test type and difficulty
+    const randomTopics = {
+      "ielts-task2": ["Environment", "Education", "Technology", "Health", "Society", "Culture", "Economics", "Government"],
+      "toefl": ["Education", "Technology", "Work", "Personal Development", "Social Issues", "Communication"],
+      "general": ["Life", "Career", "Relationships", "Personal Growth", "Current Events", "Philosophy"],
+      "business": ["Leadership", "Innovation", "Marketing", "Finance", "Strategy", "Communication", "Management"]
+    };
+    
+    const topics = randomTopics[testType] || randomTopics["general"];
+    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+    
+    generateQuestionFromAPI(randomTopic);
   };
 
   const handleStartWriting = () => {
@@ -164,9 +204,12 @@ export function TestSetup({ onStart }: TestSetupProps) {
             size="sm"
             className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white w-[180px] h-9 flex items-center justify-center gap-2 px-6"
             onClick={handleGenerateTopic}
+            disabled={isGenerating}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            <span className="text-sm">Generate question</span>
+            <span className="text-sm">
+              {isGenerating ? "Generating..." : "Generate question"}
+            </span>
           </Button>
           <Button 
             variant="secondary"
@@ -197,9 +240,12 @@ export function TestSetup({ onStart }: TestSetupProps) {
             size="sm" 
             className="mt-2 w-[180px] h-9 bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center gap-2 px-6"
             onClick={handleRandomQuestion}
+            disabled={isGenerating}
           >
             <Shuffle className="h-3.5 w-3.5" />
-            <span className="text-sm">Random question</span>
+            <span className="text-sm">
+              {isGenerating ? "Generating..." : "Random question"}
+            </span>
           </Button>
         </div>
         
