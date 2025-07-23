@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { VocabularyWord, VocabularyCategory } from "@/data/vocabulary";
 import {
   Accordion,
   AccordionContent,
@@ -40,6 +41,34 @@ import { Link } from "wouter";
 function OutlineSection({ testType, topic }: { testType: WritingTestType, topic: string }) {
   const [showOutline, setShowOutline] = useState(true);
   const outline = getOutline(testType, topic);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiData, setApiData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+ useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+          console.log("here")
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/writing-assistant`, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ question: topic, level: "Band 6.5" }),
+        });
+        if (!response.ok) {
+          throw new Error('API request failed');
+        }
+        const data = await response.json();
+        setApiData(data.data.data);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="h-full flex flex-col">
@@ -101,35 +130,11 @@ function OutlineSection({ testType, topic }: { testType: WritingTestType, topic:
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <div className="space-y-3">
-                        <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
-                          <p className="mb-2 text-[#1fb2aa] font-bold text-[12px]">Introduction (2 câu)</p>
-                          <ul className="text-xs space-y-1 list-disc pl-4 text-[#374151]">
-                            <li><strong>Câu 1:</strong> Giới thiệu vấn đề và paraphrase đề.</li>
-                            <li><strong>Câu 2:</strong> Thesis Statement – nêu 2 quan điểm và khẳng định lập trường.</li>
-                          </ul>
-                        </div>
-                        <div className="p-3 rounded-md border border-green-100 bg-[#f9fafb]">
-                          <p className="text-xs mb-2 font-bold text-[#1fb2aa]">Body Paragraph 1 – Quan điểm thứ nhất</p>
-                          <ul className="text-xs space-y-1 list-disc pl-4 text-[#374151] font-normal">
-                            <li className="font-normal"><strong>Topic Sentence.</strong></li>
-                            <li><strong>Giải thích lý do, nêu lợi ích, ví dụ cụ thể.</strong></li>
-                            <li><strong>Gợi ý từ nối:</strong> Firstly, Moreover, For instance...</li>
-                          </ul>
-                        </div>
-                        <div className="p-3 rounded-md border border-purple-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium mb-2 text-[#1fb2aa]">Body Paragraph 2 – Quan điểm thứ hai</p>
-                          <ul className="text-xs space-y-1 list-disc pl-4 text-[#374151]">
-                            <li><strong>Topic Sentence.</strong></li>
-                            <li><strong>Phân tích sâu, lợi ích dài hạn, ví dụ kỹ năng mềm.</strong></li>
-                            <li><strong>Gợi ý từ nối:</strong> Conversely, Primarily, Furthermore...</li>
-                          </ul>
-                        </div>
-                        <div className="p-3 rounded-md border border-orange-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium mb-2 text-[#1fb2aa]">Conclusion (2 câu)</p>
-                          <ul className="text-xs space-y-1 list-disc pl-4 text-[#374151] font-medium">
-                            <li><strong>Tóm tắt lại 2 quan điểm đã nêu.</strong></li>
-                            <li><strong>Tái khẳng định quan điểm cá nhân, thêm 1 câu khuyến nghị nếu cần.</strong></li>
-                          </ul>
+                            <div className="p-3 bg-[#f9fafb] rounded-md border border-gray-100 text-xs mb-3">
+                          <p className="mb-2 font-medium text-[#1fb2aa]">Dàn ý tổng quan</p>
+                          <p className="mb-2 text-[#374151]">
+                            {apiData?.suggest_outline?.["1_dan_y_tong_quan"]?.mo_ta || "This is a Two-part question essay. The essay requires an analysis of the reasons behind the increasing trend of career changes and an evaluation of whether this is a positive or negative development for society."}
+                          </p>
                         </div>
                       </div>
                     </AccordionContent>
@@ -152,72 +157,116 @@ function OutlineSection({ testType, topic }: { testType: WritingTestType, topic:
                         </span>
                       </AccordionTrigger>
                       <AccordionContent className="p-3 bg-white">
-                        {index === 0 && (
-                          <div className="mt-3 space-y-3">
-                            <div className="p-3 bg-[#f9fafb] rounded-md border border-gray-100 text-xs">
-                              <p className="mb-2 font-medium text-[#1fb2aa]">Hướng dẫn:</p>
-                              <p className="mb-2 text-[#374151]">Mở bài 2 câu – paraphrase đề + thesis statement</p>
-                            </div>
-                            
-                            <div className="p-3 rounded-md border border-blue-100 text-xs text-blue-700 bg-[#f9fafb]">
-                              <p className="mb-2 font-medium text-[#1fb2aa]">Câu 1 – Paraphrase đề bài</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Mục đích:</strong> Paraphrase vấn đề chính trong câu hỏi</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Ví dụ:</strong> "The financial remuneration of elite sports professionals often far surpasses that of individuals in crucial societal roles, such as healthcare providers and educators, a phenomenon that sparks considerable debate regarding its fairness."</p>
-                            </div>
-                            
-                            <div className="p-3 rounded-md border border-green-100 text-xs text-green-700 bg-[#f9fafb]">
-                              <p className="mb-2 font-medium text-[#1fb2aa]">Câu 2 – Thesis Statement</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Mục đích:</strong> Thesis statement phù hợp với Opinion essay – To what extent agree/disagree (Bài luận nêu quan điểm cá nhân về mức độ đồng ý/không đồng ý).</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Ví dụ:</strong> "While I acknowledge the market-driven forces that inflate athletes' incomes, I largely contend that this significant disparity is fundamentally inequitable when considering the indispensable societal contributions of other professions."</p>
-                            </div>
-                          </div>
-                        )}
-                        {index === 1 && (
-                          <div className="mt-3 space-y-3">
-                            <div className="p-3 rounded-md border border-blue-100 text-xs text-blue-700 bg-[#f9fafb]">
-                              <p className="mb-2 text-[#1fb2aa] font-medium">Topic Sentence</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Content:</strong> Dịch và cải tiến topic sentence này sang tiếng Anh: "On the one hand, there are compelling arguments to suggest that the exorbitant salaries of top athletes are indeed justified, primarily due to the unique nature of their profession and the entertainment value they provide."</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Ví dụ:</strong> On the one hand, there are compelling arguments to suggest that the exorbitant salaries of top athletes are indeed justified, primarily due to the unique nature of their profession and the entertainment value they provide.</p>
-                            </div>
-                            
-                            <div className="p-3 rounded-md border border-green-100 text-xs text-green-700 bg-[#f9fafb]">
-                              <p className="mb-2 text-[#1fb2aa] font-medium">Supporting Idea 1</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Idea:</strong> Scarcity of exceptional talent and short career span</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Ví dụ cụ thể:</strong> Athletes like Lionel Messi or Serena Williams possess a rare combination of physical prowess, mental fortitude, and dedication, making them truly one in a million. Their peak performance window is often limited to a decade or so.</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Development:</strong> This extreme scarcity of top-tier talent, combined with a brief professional lifespan, means that their market value is inherently high. Consequently, they must earn a substantial amount during their active years to secure their financial future after retirement.</p>
-                            </div>
-                            
-                            <div className="p-3 rounded-md border border-purple-100 text-xs text-purple-700 bg-[#f9fafb]">
-                              <p className="mb-2 font-medium text-[#1fb2aa]">Supporting Idea 2</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Idea:</strong> Massive revenue generation and global entertainment appeal</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Ví dụ cụ thể:</strong> Major sporting events, such as the FIFA World Cup or the Olympic Games, attract billions of viewers worldwide, leading to colossal revenues from broadcasting rights, sponsorships, merchandise sales, and ticket revenues. Top athletes are central to this multi-billion dollar industry.</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Development:</strong> These professionals are not merely players; they are global brands and entertainers who drive immense commercial success for leagues, teams, and related businesses. Their salaries, while large, often represent a fraction of the total revenue they help generate for various stakeholders, justifying their earnings through their direct economic impact.</p>
-                            </div>
-                          </div>
-                        )}
-                        {index === 2 && (
-                          <div className="mt-3 space-y-3">
-                            <div className="p-3 rounded-md border border-orange-100 text-xs text-orange-700 bg-[#f9fafb]">
-                              <p className="mb-2 text-[#1fb2aa] font-medium">Topic Sentence</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Content:</strong> Dịch và cải tiến topic sentence này sang tiếng Anh: "However, it is equally understandable why many people perceive this disparity as unfair, given the vital contributions of professions such as nursing, medicine, and teaching to the fundamental well-being and development of society."</p>
-                              <p className="mb-2 text-[#374151]">• <strong>Ví dụ:</strong> However, it is equally understandable why many people perceive this disparity as unfair, given the vital contributions of professions such as nursing, medicine, and teaching to the fundamental well-being and development of society.</p>
-                            </div>
-                            
-                            <div className="p-3 rounded-md border border-red-100 text-xs bg-[#f9fafb] text-[#374151]">
-                              <p className="mb-2 font-medium text-[#1fb2aa]">Supporting Idea 1</p>
-                              <p className="mb-2">• <strong>Idea:</strong> Direct and indispensable impact on human welfare and societal progress</p>
-                              <p className="mb-2">• <strong>Ví dụ cụ thể:</strong> Nurses provide critical frontline care, often working long, gruelling shifts to save lives and alleviate suffering, as evidenced profoundly during the COVID-19 pandemic. Doctors diagnose and treat diseases, while teachers educate and shape the minds of future generations, fostering societal knowledge and innovation.</p>
-                              <p className="mb-2">• <strong>Development:</strong> Unlike the entertainment value offered by sports, these professions directly impact human health, safety, and intellectual growth. Their work is fundamental to the very fabric of society, yet their compensation often fails to reflect the profound positive externalities they create.</p>
-                            </div>
-                            
-                            <div className="p-3 rounded-md border border-indigo-100 text-xs bg-[#f9fafb] text-[#374151]">
-                              <p className="mb-2 font-medium text-[#1fb2aa]">Supporting Idea 2</p>
-                              <p className="mb-2">• <strong>Idea:</strong> Extensive training, high responsibility, and demanding working conditions</p>
-                              <p className="mb-2">• <strong>Ví dụ cụ thể:</strong> Medical professionals undergo a decade or more of rigorous academic and practical training, accumulating significant debt, before assuming roles with immense responsibility for human lives. Similarly, teachers manage large classes, diverse learning needs, and administrative burdens, often sacrificing personal time for student development.</p>
-                              <p className="mb-2">• <strong>Development:</strong> The substantial investment in education, coupled with the emotional and physical toll of dealing with life-and-death situations or challenging educational environments, contrasts sharply with the often lower financial rewards. This imbalance suggests a societal undervaluation of critical services over entertainment.</p>
-                            </div>
-                          </div>
-                        )}
+{index === 0 && (
+  <div className="mt-3 space-y-3">
+    <div className="p-3 bg-[#f9fafb] rounded-md border border-gray-100 text-xs">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Hướng dẫn:</p>
+      <p className="mb-2 text-[#374151]">
+        {apiData?.suggest_outline?.["2_introduction"]?.huong_dan || "Mở bài 2 câu – paraphrase đề + thesis statement"}
+      </p>
+    </div>
+    
+    <div className="p-3 rounded-md border border-blue-100 text-xs text-blue-700 bg-[#f9fafb]">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Câu 1 – Paraphrase đề bài</p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Mục đích:</strong> {apiData?.suggest_outline?.["2_introduction"]?.cau_1_paraphrase?.muc_dich || "loading"}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Ví dụ:</strong> "{apiData?.suggest_outline?.["2_introduction"]?.cau_1_paraphrase?.vi_du || "The phenomenon of individuals frequently transitioning between different professions throughout their working lives is becoming increasingly common."}"
+      </p>
+    </div>
+    
+    <div className="p-3 rounded-md border border-green-100 text-xs text-green-700 bg-[#f9fafb]">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Câu 2 – Thesis Statement</p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Mục đích:</strong> {apiData?.suggest_outline?.["2_introduction"]?.cau_2_thesis?.muc_dich || "Thesis statement phù hợp với Two-part question essay"}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Ví dụ:</strong> "{apiData?.suggest_outline?.["2_introduction"]?.cau_2_thesis?.vi_du || "This essay will explore the primary reasons behind this trend and argue that it represents a largely positive development for society."}"
+      </p>
+    </div>
+  </div>
+)}
+
+{index === 1 && (
+  <div className="mt-3 space-y-3">
+    <div className="p-3 rounded-md border border-blue-100 text-xs text-blue-700 bg-[#f9fafb]">
+      <p className="mb-2 text-[#1fb2aa] font-medium">Topic Sentence</p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Content:</strong> {apiData?.suggest_outline?.["3_body_1_causes"]?.topic_sentence?.content || "loading"}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Ví dụ:</strong> {apiData?.suggest_outline?.["3_body_1_causes"]?.topic_sentence?.vi_du || "Several core factors compel individuals to alter their career paths in the contemporary era, ranging from technological advancements to evolving personal needs."}
+      </p>
+    </div>
+    
+    <div className="p-3 rounded-md border border-green-100 text-xs text-green-700 bg-[#f9fafb]">
+      <p className="mb-2 text-[#1fb2aa] font-medium">Supporting Idea 1</p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Idea:</strong> {apiData?.suggest_outline?.["3_body_1_causes"]?.supporting_idea_1?.chu_de || "Technological advancements and automation leading to job displacement or creation of new roles."}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Ví dụ cụ thể:</strong> {apiData?.suggest_outline?.["3_body_1_causes"]?.supporting_idea_1?.vi_du_cu_the || "For instance, the rise of AI and robotics has rendered many traditional manufacturing or administrative roles obsolete, forcing workers to retrain for new fields like data science or digital marketing."}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Development:</strong> {apiData?.suggest_outline?.["3_body_1_causes"]?.supporting_idea_1?.development || "Consequently, individuals must adapt by acquiring new skills or seeking opportunities in burgeoning sectors, leading to career shifts."}
+      </p>
+    </div>
+    
+    <div className="p-3 rounded-md border border-purple-100 text-xs text-purple-700 bg-[#f9fafb]">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Supporting Idea 2</p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Idea:</strong> {apiData?.suggest_outline?.["3_body_1_causes"]?.supporting_idea_2?.chu_de || "Quest for personal fulfillment, better work-life balance, and evolving values."}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Ví dụ cụ thể:</strong> {apiData?.suggest_outline?.["3_body_1_causes"]?.supporting_idea_2?.vi_du_cu_the || "Many professionals, after years in high-pressure corporate environments, might transition to non-profit work or entrepreneurship, seeking greater meaning or flexibility, as seen with former bankers becoming social entrepreneurs."}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Development:</strong> {apiData?.suggest_outline?.["3_body_1_causes"]?.supporting_idea_2?.development || "This pursuit of job satisfaction and a healthier lifestyle often outweighs the stability of a long-term career, prompting a change."}
+      </p>
+    </div>
+  </div>
+)}
+
+{index === 2 && (
+  <div className="mt-3 space-y-3">
+    <div className="p-3 rounded-md border border-orange-100 text-xs text-orange-700 bg-[#f9fafb]">
+      <p className="mb-2 text-[#1fb2aa] font-medium">Topic Sentence</p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Content:</strong> {apiData?.suggest_outline?.["4_body_2_solutions"]?.topic_sentence?.content || "loading"}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Ví dụ:</strong> {apiData?.suggest_outline?.["4_body_2_solutions"]?.topic_sentence?.vi_du || "While this trend might present initial challenges, I contend that the increasing prevalence of career changes brings significant benefits to societal development."}
+      </p>
+    </div>
+    
+    <div className="p-3 rounded-md border border-red-100 text-xs bg-[#f9fafb] text-[#374151]">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Supporting Idea 1</p>
+      <p className="mb-2">
+        • <strong>Idea:</strong> {apiData?.suggest_outline?.["4_body_2_solutions"]?.supporting_idea_1?.chu_de || "Enhanced workforce adaptability and skill diversification."}
+      </p>
+      <p className="mb-2">
+        • <strong>Ví dụ cụ thể:</strong> {apiData?.suggest_outline?.["4_body_2_solutions"]?.supporting_idea_1?.vi_du_cu_the || "When individuals move between sectors, they bring diverse perspectives and skill sets, fostering innovation. For example, a former teacher entering the tech industry might introduce novel educational software solutions."}
+      </p>
+      <p className="mb-2">
+        • <strong>Development:</strong> {apiData?.suggest_outline?.["4_body_2_solutions"]?.supporting_idea_1?.development || "This cross-pollination of ideas and expertise makes the workforce more resilient and dynamic, better equipped to respond to economic shifts."}
+      </p>
+    </div>
+    
+    <div className="p-3 rounded-md border border-indigo-100 text-xs bg-[#f9fafb] text-[#374151]">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Supporting Idea 2</p>
+      <p className="mb-2">
+        • <strong>Idea:</strong> {apiData?.suggest_outline?.["4_body_2_solutions"]?.supporting_idea_2?.chu_de || "Increased individual job satisfaction and overall productivity."}
+      </p>
+      <p className="mb-2">
+        • <strong>Ví dụ cụ thể:</strong> {apiData?.suggest_outline?.["4_body_2_solutions"]?.supporting_idea_2?.vi_du_cu_the || "People who are genuinely passionate about their work are more likely to be productive and engaged. A person who switches from a dissatisfying job to a fulfilling one, like a lawyer becoming a chef, often experiences higher morale and contributes more effectively to their new field."}
+      </p>
+      <p className="mb-2">
+        • <strong>Development:</strong> {apiData?.suggest_outline?.["4_body_2_solutions"]?.supporting_idea_2?.development || "This leads to a more motivated and efficient workforce, ultimately boosting economic output and societal well-being."}
+      </p>
+    </div>
+  </div>
+)}
                       </AccordionContent>
                     </AccordionItem>
                   ))}
@@ -238,24 +287,34 @@ function OutlineSection({ testType, topic }: { testType: WritingTestType, topic:
                       </span>
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
-                      <div className="mt-3 space-y-3">
-                        <div className="p-3 bg-[#f9fafb] rounded-md border border-gray-100 text-xs">
-                          <p className="mb-2 font-medium text-[#1fb2aa]">Hướng dẫn</p>
-                          <p className="mb-2 text-[#374151]">Kết bài 2 câu – summary + recommendation</p>
-                        </div>
-                        
-                        <div className="p-3 rounded-md border border-blue-100 text-xs bg-[#f9fafb]">
-                          <p className="mb-2 font-medium text-[#1fb2aa]">Câu 1 – Summary</p>
-                          <p className="mb-2 text-[#374151]">• <strong>Mục đích:</strong> Tóm tắt cả 2 phần body và main topic, không nêu quan điểm mới</p>
-                          <p className="mb-2 text-[#374151]">• <strong>Ví dụ:</strong> In conclusion, while the immense earnings of top athletes can be attributed to their unique talent and the vast commercial machinery of global sports, it is equally compelling to argue that the remuneration for professions pivotal to societal welfare, such as nursing and teaching, is disproportionately low.</p>
-                        </div>
-                        
-                        <div className="p-3 bg-[#f9fafb] rounded-md border border-emerald-100 text-xs">
-                          <p className="mb-2 font-medium text-[#1fb2aa]">Câu 2 – Final Recommendation</p>
-                          <p className="mb-2 text-[#374151]">• <strong>Mục đích:</strong> Final recommendation về giải pháp hoặc quan điểm bền vững liên quan đến: "Successful sports professionals can earn much more than those in other important professions, like nurses, doctors, and teachers. Some people think it is fully justified, while others believe it is unfair. To what extent do you agree or disagree?"</p>
-                          <p className="mb-2 text-[#374151]">• <strong>Ví dụ:</strong> Ultimately, I believe this disparity highlights a problematic imbalance in societal values, suggesting a greater need to acknowledge and justly reward those who contribute directly to the fundamental well-being and progress of humanity.</p>
-                        </div>
-                      </div>
+                    <div className="mt-3 space-y-3">
+    <div className="p-3 bg-[#f9fafb] rounded-md border border-gray-100 text-xs">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Hướng dẫn</p>
+      <p className="mb-2 text-[#374151]">
+        {apiData?.suggest_outline?.["5_conclusion"]?.huong_dan || "Kết bài 2 câu – summary + recommendation"}
+      </p>
+    </div>
+   
+    <div className="p-3 rounded-md border border-blue-100 text-xs bg-[#f9fafb]">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Câu 1 – Summary</p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Mục đích:</strong> {apiData?.suggest_outline?.["5_conclusion"]?.cau_1_summary?.muc_dich || "Tóm tắt cả 2 phần body và main topic, không nêu quan điểm mới"}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Ví dụ:</strong> {apiData?.suggest_outline?.["5_conclusion"]?.cau_1_summary?.vi_du || "In conclusion, the growing phenomenon of career changes is driven by both external forces like technological disruption and internal desires for personal fulfillment."}
+      </p>
+    </div>
+   
+    <div className="p-3 bg-[#f9fafb] rounded-md border border-emerald-100 text-xs">
+      <p className="mb-2 font-medium text-[#1fb2aa]">Câu 2 – Final Recommendation</p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Mục đích:</strong> {apiData?.suggest_outline?.["5_conclusion"]?.cau_2_final?.muc_dich || "Final recommendation về giải pháp hoặc quan điểm bền vững"}
+      </p>
+      <p className="mb-2 text-[#374151]">
+        • <strong>Ví dụ:</strong> {apiData?.suggest_outline?.["5_conclusion"]?.cau_2_final?.vi_du || "Despite potential initial disruptions, this flexibility is largely beneficial, fostering a more adaptable, innovative, and satisfied society."}
+      </p>
+    </div>
+  </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -299,26 +358,24 @@ function OutlineSection({ testType, topic }: { testType: WritingTestType, topic:
                         <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                           <p className="text-xs font-medium text-[#1fb2aa] mb-2">Bối cảnh – Lý do:</p>
                           <p className="text-xs text-[#374151]">
-                            Các vận động viên thể thao chuyên nghiệp thành công có thể kiếm được nhiều tiền hơn đáng kể so với những người làm các ngành nghề quan trọng khác, như y tá, bác sĩ và giáo viên.
-                          </p>
+      {apiData?.analyze_question?.["1_highlight_keywords"]?.boi_canh_ly_do || "Loading..."}                          </p>
                         </div>
                         <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                           <p className="text-xs font-medium text-[#1fb2aa] mb-2">Chủ thể chính:</p>
                           <p className="text-xs text-[#374151]">
-                            Successful sports professionals (vận động viên thể thao chuyên nghiệp thành công) và other important professions (các ngành nghề quan trọng khác như y tá, bác sĩ, giáo viên)
-                          </p>
+      {apiData?.analyze_question?.["1_highlight_keywords"]?.chu_the_chinh || "Loading..."}                          </p>
                         </div>
                         <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                           <p className="text-xs font-medium text-[#1fb2aa] mb-2">Liệt kê quan điểm:</p>
                           <ul className="text-xs text-[#374151] space-y-1 list-disc pl-4">
-                            <li>Quan điểm 1: Việc này là fully justified (hoàn toàn hợp lý/đáng được hưởng)</li>
-                            <li>Quan điểm 2: Việc này là unfair (không công bằng)</li>
+                            <li> Quan điểm 1: {apiData?.analyze_question?.["1_highlight_keywords"]?.liet_ke_quan_diem?.quan_diem_1 || "Loading..."}</li>
+                            <li>Quan điểm 2: {apiData?.analyze_question?.["1_highlight_keywords"]?.liet_ke_quan_diem?.quan_diem_2 || "Loading..."}</li>
                           </ul>
                         </div>
                         <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                           <p className="text-xs font-medium text-[#1fb2aa] mb-2">Yêu cầu chính của đề bài:</p>
                           <p className="text-xs text-[#374151]">
-                            To what extent do you agree or disagree (Bạn đồng ý hay không đồng ý ở mức độ nào? Nêu rõ quan điểm và mức độ đồng tình/phản đối)
+                           {apiData?.analyze_question?.["1_highlight_keywords"]?.yeu_cau_chinh || "Loading..."}
                           </p>
                         </div>
                       </div>
@@ -341,41 +398,41 @@ function OutlineSection({ testType, topic }: { testType: WritingTestType, topic:
                       </span>
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
-                      <div className="space-y-3">
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Essay Type:</p>
-                          <p className="text-xs text-[#374151]">
-                            Opinion essay – To what extent agree/disagree (Bài luận nêu quan điểm cá nhân về mức độ đồng ý/không đồng ý).
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Tips for Band 7.0+ (dưới từng tiêu chí chấm điểm):</p>
-                        </div>
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Task Response:</p>
-                          <p className="text-xs text-[#374151]">
-                            Với mục tiêu Band 7.0 trở lên cho bài viết này bạn nên Fully addresses all parts of task (đáp ứng đầy đủ các phần của đề bài). Position (lập trường) phải clear throughout (rõ ràng xuyên suốt). Main ideas (các ý chính) phải được extended(phát triển) và supported (hỗ trợ) tốt bằng examples (ví dụ) và explanations (giải thích) cụ thể.
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Coherence & Cohesion:</p>
-                          <p className="text-xs text-[#374151]">
-                            Với mục tiêu Band 7.0 trở lên cho bài viết này bạn nên có Clear progression (sự phát triển mạch lạc). Wide range(phạm vi rộng) của cohesive devices (công cụ liên kết) được used appropriately (sử dụng phù hợp). Mỗi paragraph(đoạn văn) phải có clear central topic (chủ đề trung tâm rõ ràng).
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Lexical Resource:</p>
-                          <p className="text-xs text-[#374151]">
-                            Với mục tiêu Band 7.0 trở lên cho bài viết này bạn nên dùng Wide range vocabulary (phạm vi từ vựng rộng) với flexibility (linh hoạt) và precise usage (sử dụng chính xác). Good paraphrase skills (kỹ năng diễn đạt lại tốt). Occasional errors (lỗi thỉnh thoảng) trong word choice (lựa chọn từ) là chấp nhận được.
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Grammatical Range & Accuracy:</p>
-                          <p className="text-xs text-[#374151]">
-                            Với mục tiêu Band 7.0 trở lên cho bài viết này bạn nên dùng Wide range của structures (cấu trúc ngữ pháp đa dạng) với flexibility (linh hoạt). Majority of sentences (đa số câu) phải error-free (không lỗi) với good control (kiểm soát tốt).
-                          </p>
-                        </div>
+                     <div className="space-y-3">
+                      <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                        <p className="text-xs font-medium text-[#1fb2aa] mb-2">Essay Type:</p>
+                        <p className="text-xs text-[#374151]">
+                          {apiData?.analyze_question?.["2_identify_essay_type"]?.essay_type || "Loading..."}
+                        </p>
                       </div>
+                      <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                        <p className="text-xs font-medium text-[#1fb2aa] mb-2">Tips for Band 6.5+ (dưới từng tiêu chí chấm điểm):</p>
+                      </div>
+                      <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                        <p className="text-xs font-medium text-[#1fb2aa] mb-2">Task Response:</p>
+                        <p className="text-xs text-[#374151]">
+                          {apiData?.analyze_question?.["2_identify_essay_type"]?.tips_chi_tiet?.task_response || "Loading..."}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                        <p className="text-xs font-medium text-[#1fb2aa] mb-2">Coherence & Cohesion:</p>
+                        <p className="text-xs text-[#374151]">
+                          {apiData?.analyze_question?.["2_identify_essay_type"]?.tips_chi_tiet?.coherence_cohesion || "Loading..."}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                        <p className="text-xs font-medium text-[#1fb2aa] mb-2">Lexical Resource:</p>
+                        <p className="text-xs text-[#374151]">
+                          {apiData?.analyze_question?.["2_identify_essay_type"]?.tips_chi_tiet?.lexical_resource || "Loading..."}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                        <p className="text-xs font-medium text-[#1fb2aa] mb-2">Grammatical Range & Accuracy:</p>
+                        <p className="text-xs text-[#374151]">
+                          {apiData?.analyze_question?.["2_identify_essay_type"]?.tips_chi_tiet?.grammatical_range || "Loading..."}
+                        </p>
+                      </div>
+                    </div>
                     </AccordionContent>
                   </AccordionItem>
 
@@ -399,19 +456,19 @@ function OutlineSection({ testType, topic }: { testType: WritingTestType, topic:
                         <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                           <p className="text-xs font-medium text-[#1fb2aa] mb-2">Main Topic:</p>
                           <p className="text-xs text-[#374151]">
-                            Bài viết thảo luận về tính hợp lý hay không công bằng của mức thu nhập cao của các vận động viên thể thao chuyên nghiệp thành công so với các ngành nghề thiết yếu khác trong xã hội.
+                             {apiData?.analyze_question?.["3_main_topic_aspects"]?.main_topic || "Loading..."}
                           </p>
                         </div>
                         <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                           <p className="text-xs font-medium text-[#1fb2aa] mb-2">Topic Sentence 1:</p>
                           <p className="text-xs text-[#374151]">
-                            On the one hand, there are compelling arguments to suggest that the exorbitant salaries of top athletes are indeed justified, primarily due to the unique nature of their profession and the entertainment value they provide.
+                            {apiData?.analyze_question?.["3_main_topic_aspects"]?.topic_sentence_1 || "Loading..."}
                           </p>
                         </div>
                         <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                           <p className="text-xs font-medium text-[#1fb2aa] mb-2">Topic Sentence 2:</p>
                           <p className="text-xs text-[#374151]">
-                            However, it is equally understandable why many people perceive this disparity as unfair, given the vital contributions of professions such as nursing, medicine, and teaching to the fundamental well-being and development of society.
+                             {apiData?.analyze_question?.["3_main_topic_aspects"]?.topic_sentence_2 || "Loading..."}
                           </p>
                         </div>
                       </div>
@@ -435,24 +492,14 @@ function OutlineSection({ testType, topic }: { testType: WritingTestType, topic:
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <div className="space-y-3">
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Task 1:</p>
-                          <p className="text-xs text-[#374151]">
-                            Nêu rõ lập trường cá nhân (position) về việc đồng ý hay không đồng ý với quan điểm trong đề bài, và mức độ đồng ý/không đồng ý.
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Task 2:</p>
-                          <p className="text-xs text-[#374151]">
-                            Phát triển các luận điểm (arguments) ủng hộ lập trường của mình, cung cấp giải thích chi tiết và ví dụ cụ thể (kèm dẫn chứng nếu có thể).
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Task 3:</p>
-                          <p className="text-xs text-[#374151]">
-                            Thảo luận hoặc công nhận quan điểm đối lập (counter-arguments) và giải thích tại sao lập trường của mình vẫn vững chắc hơn (đối với quan điểm partially agree), hoặc phản bác mạnh mẽ (đối với quan điểm fully agree/disagree)
-                          </p>
-                        </div>
+                        {apiData?.analyze_question?.["4_jobs_to_done"]?.map((task, index) => (
+        <div key={index} className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Task {index + 1}:</p>
+          <p className="text-xs text-[#374151]">
+            {task || "Loading..."}
+          </p>
+        </div>
+      ))}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -476,15 +523,15 @@ function OutlineSection({ testType, topic }: { testType: WritingTestType, topic:
                       <div className="space-y-3">
                         <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                           <p className="text-xs font-medium text-[#1fb2aa] mb-2">Quan điểm gợi ý:</p>
-                          <p className="text-xs text-[#374151]">
-                            Partially agree (Đồng ý một phần) – Đồng ý rằng có lý do cho thu nhập cao của VĐV, nhưng cũng nhìn nhận sự bất công với các ngành nghề khác.
-                          </p>
-                        </div>
-                        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                          <p className="text-xs font-medium text-[#1fb2aa] mb-2">Lý do cụ thể:</p>
-                          <p className="text-xs text-[#374151]">
-                            Lập trường này cho phép một bài luận balanced (cân bằng), thể hiện sự hiểu biết sâu sắc về cả hai mặt của vấn đề. Bạn có thể dễ dàng trình bày các lý do tại sao VĐV kiếm được nhiều tiền (như tài năng hiếm có, sự giải trí toàn cầu, sự nghiệp ngắn ngủi, rủi ro chấn thương) và đồng thời chỉ ra sự thiếu công bằng trong việc trả lương cho các ngành nghề thiết yếu (như sự hy sinh, tầm quan trọng xã hội, đào tạo chuyên sâu nhưng thu nhập thấp). Cách tiếp cận này giúp bài viết đạt band cao hơn vì nó thể hiện tư duy phản biện và khả năng phát triển nhiều ý khác nhau.
-                          </p>
+        <p className="text-xs text-[#374151]">
+          {apiData?.analyze_question?.["5_suggested_viewpoint"]?.quan_diem_goi_y || "Loading..."}
+        </p>
+      </div>
+      <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+        <p className="text-xs font-medium text-[#1fb2aa] mb-2">Lý do cụ thể:</p>
+        <p className="text-xs text-[#374151]">
+          {apiData?.analyze_question?.["5_suggested_viewpoint"]?.ly_do_cu_the || "Loading..."}
+        </p>
                         </div>
                       </div>
                     </AccordionContent>
@@ -518,166 +565,38 @@ function ResourcesSection({ testType, topic }: { testType: WritingTestType, topi
   const [showVocabulary, setShowVocabulary] = useState(false);
   const [showPhrases, setShowPhrases] = useState(false);
   const [showWordBank, setShowWordBank] = useState(false);
-  const allVocabulary = getVocabulary(testType, topic);
-  const phrases = getPhrases(testType);
+  const [allVocabulary, setAllVocabulary] = useState<VocabularyCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch vocabulary data when component mounts or topic/testType changes
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      const vocabularyData = await getVocabulary(testType, topic);
+      setAllVocabulary(vocabularyData);
+      setIsLoading(false);
+    };
+    fetchData();
+  }, [testType, topic]);
 
   // Filter vocabulary for each tab
-  const vocabularyWords = allVocabulary.flatMap(category => 
+  const vocabularyWords = allVocabulary.flatMap(category =>
     category.words
-      .filter(word => ["N", "V", "Adj", "Adv"].includes(word.partOfSpeech))
-      .map(word => ({ ...word, type: category.type }))
+      .filter((word: VocabularyWord) => ['N', 'V', 'Adj', 'Adv'].includes(word.partOfSpeech))
+      .map((word: VocabularyWord) => ({ ...word, type: category.type }))
   );
 
-  // Additional vocabulary data
-  const additionalVocabulary = [
-    {
-      word: "Sustainable",
-      partOfSpeech: "Adj",
-      difficulty: "B2",
-      meaning: "Có thể duy trì được lâu dài, bền vững",
-      example: "Companies are trying to develop more sustainable business practices.",
-      type: "positive"
-    },
-    {
-      word: "Resilience",
-      partOfSpeech: "N",
-      difficulty: "C1",
-      meaning: "Khả năng phục hồi, sức bền",
-      example: "The community showed remarkable resilience in the face of economic hardship.",
-      type: "positive"
-    },
-    {
-      word: "Implement",
-      partOfSpeech: "V",
-      difficulty: "B2",
-      meaning: "Thực hiện, triển khai",
-      example: "The government plans to implement new environmental regulations next year.",
-      type: "neutral"
-    },
-    {
-      word: "Unprecedented",
-      partOfSpeech: "Adj",
-      difficulty: "C1",
-      meaning: "Chưa từng có trước đây, chưa từng thấy",
-      example: "The pandemic caused unprecedented disruption to global supply chains.",
-      type: "neutral"
-    },
-    {
-      word: "Detrimental",
-      partOfSpeech: "Adj",
-      difficulty: "C1",
-      meaning: "Có hại, gây tổn hại",
-      example: "Excessive screen time can be detrimental to children's development.",
-      type: "negative"
-    },
-    {
-      word: "Mitigate",
-      partOfSpeech: "V",
-      difficulty: "C1",
-      meaning: "Làm giảm, làm dịu bớt",
-      example: "Companies are taking steps to mitigate their environmental impact.",
-      type: "positive"
-    },
-    {
-      word: "Profound",
-      partOfSpeech: "Adj",
-      difficulty: "C1",
-      meaning: "Sâu sắc, to lớn",
-      example: "Technology has had a profound effect on how we communicate with each other.",
-      type: "neutral"
-    },
-    {
-      word: "Advocate",
-      partOfSpeech: "V",
-      difficulty: "C1",
-      meaning: "Ủng hộ, biện hộ",
-      example: "Many scientists advocate for stronger climate change policies.",
-      type: "neutral"
-    }
-  ];
-
-  // Combine vocabulary words
-  const allVocabularyWords = [...vocabularyWords, ...additionalVocabulary];
-
-  // Get phrase words from vocabulary data
-  const phraseWords = allVocabulary.flatMap(category => 
+  const phraseWords = allVocabulary.flatMap(category =>
     category.words
-      .filter(word => word.partOfSpeech === "Phrase")
-      .map(word => ({ ...word, type: category.type }))
+      .filter((word: VocabularyWord) => word.partOfSpeech === 'Phrase')
+      .map((word: VocabularyWord) => ({ ...word, type: category.type }))
   );
 
-  // Additional collocations data
-  const additionalCollocations = [
-    {
-      word: "Public health crisis",
-      partOfSpeech: "Collocations",
-      difficulty: "B2",
-      meaning: "Khủng hoảng sức khỏe cộng đồng",
-      example: "The rise in heroin use has led to a public health crisis in many regions.",
-      type: "neutral"
-    },
-    {
-      word: "Climate change impact",
-      partOfSpeech: "Collocations",
-      difficulty: "B2",
-      meaning: "Tác động của biến đổi khí hậu",
-      example: "Researchers are studying the climate change impact on coastal communities.",
-      type: "neutral"
-    },
-    {
-      word: "Sustainable development goals",
-      partOfSpeech: "Collocations",
-      difficulty: "C1",
-      meaning: "Mục tiêu phát triển bền vững",
-      example: "Many countries are working to meet the sustainable development goals set by the United Nations.",
-      type: "positive"
-    },
-    {
-      word: "Digital literacy skills",
-      partOfSpeech: "Collocations",
-      difficulty: "B2",
-      meaning: "Kỹ năng sử dụng công nghệ số",
-      example: "Schools are focusing more on teaching digital literacy skills to prepare students for modern workplaces.",
-      type: "positive"
-    },
-    {
-      word: "Economic inequality gap",
-      partOfSpeech: "Collocations",
-      difficulty: "C1",
-      meaning: "Khoảng cách bất bình đẳng kinh tế",
-      example: "The economic inequality gap has widened in many developed countries over the past decade.",
-      type: "negative"
-    },
-    {
-      word: "Demographic shift",
-      partOfSpeech: "Collocations",
-      difficulty: "B2",
-      meaning: "Sự thay đổi nhân khẩu học",
-      example: "The demographic shift toward an aging population has implications for healthcare systems worldwide.",
-      type: "neutral"
-    },
-    {
-      word: "Renewable energy sources",
-      partOfSpeech: "Collocations",
-      difficulty: "B1",
-      meaning: "Các nguồn năng lượng tái tạo",
-      example: "Investing in renewable energy sources is essential for reducing carbon emissions.",
-      type: "positive"
-    },
-    {
-      word: "Global supply chain",
-      partOfSpeech: "Collocations",
-      difficulty: "B2",
-      meaning: "Chuỗi cung ứng toàn cầu",
-      example: "The pandemic has revealed vulnerabilities in global supply chains across many industries.",
-      type: "neutral"
-    }
-  ];
+  // Remove additionalVocabulary and additionalCollocations since we're fetching from API
+  const allVocabularyWords = vocabularyWords;
+  const allPhraseWords = phraseWords;
 
-  // Combine phrase words with additional collocations
-  const allPhraseWords = [...phraseWords, ...additionalCollocations];
-
-  // State for displayed word counts and loading states
+  // State for displayed word counts
   const [vocabDisplayCount, setVocabDisplayCount] = useState(10);
   const [phraseDisplayCount, setPhraseDisplayCount] = useState(8);
   const [isLoadingVocab, setIsLoadingVocab] = useState(false);
@@ -686,7 +605,6 @@ function ResourcesSection({ testType, topic }: { testType: WritingTestType, topi
   // Handle loading more words
   const handleLoadMoreVocab = () => {
     setIsLoadingVocab(true);
-    // Simulate loading delay
     setTimeout(() => {
       setVocabDisplayCount(prevCount => prevCount + 10);
       setIsLoadingVocab(false);
@@ -695,7 +613,6 @@ function ResourcesSection({ testType, topic }: { testType: WritingTestType, topi
 
   const handleLoadMorePhrases = () => {
     setIsLoadingPhrases(true);
-    // Simulate loading delay
     setTimeout(() => {
       setPhraseDisplayCount(prevCount => prevCount + 10);
       setIsLoadingPhrases(false);

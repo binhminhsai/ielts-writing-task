@@ -47,7 +47,7 @@ export function TestSetup({ onStart }: TestSetupProps) {
     setErrorMessage("");
     
     try {
-      const response = await fetch('https://agentwp-api.aihubproduction.com/generate-question', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/generate-question`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

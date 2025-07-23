@@ -97,21 +97,6 @@ interface FeedbackData {
     totalWords: number;
     completionTime: string;
   };
-  grammarFeedback?: GrammarFeedback[];
-   highlightedEssay?: string;
-}
-interface GrammarFeedback {
-  id: string;
-  type: 'error' | 'suggestion' | 'improvement';
-  category: string;
-  original: string;
-  corrected?: string;
-  improved?: string;
-  suggested?: string;
-  explanation: string;
-  severity?: string;
-  bandImpact?: string;
-  rule?: string;
 }
 
 interface FeedbackInterfaceProps {
@@ -131,108 +116,28 @@ export function FeedbackInterface({
   const [error, setError] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<Date | null>(null);
 const [completionTime, setCompletionTime] = useState<string>('N/A');
-const [isEvaluationLoading, setIsEvaluationLoading] = useState(true);
-const [isGrammarLoading, setIsGrammarLoading] = useState(true);
-const [grammarLevel, setGrammarLevel] = useState<"Band 6.0" | "Band 6.5" | "Band 7.0" | "VC">("Band 6.5");
-const [connectionError, setConnectionError] = useState(false);
-const [retryCount, setRetryCount] = useState(0);
-const MAX_RETRIES = 2;
-const [evaluationProgress, setEvaluationProgress] = useState(0);
-
-// Then use it in the body:
 
 
-  // Example sustainable development essay - 300 words
-  const sampleEssay = `In recent years, sustainable development has become one of the most critical issues facing governments worldwide.
-While some people argue that economic growth should be the primary focus, others believe environmental protection must take priority.
-This essay will examine both perspectives and present my own viewpoint.
-On one hand, supporters of economic growth argue that development is essential for improving living standards and reducing poverty.
-They believe that industrial expansion create jobs and generate income, which allow people to meet their basic needs.
-For example, developing countries like China and India have achieved significant economic progress through manufacturing and industrialization.
-These nations has lifted millions of people out of poverty and improved infrastructure substantially.
-Moreover, proponents claim that wealthier societies are better equipped to invest in clean technologies and environmental solutions.
-On the other hand, environmentalists contend that unchecked economic growth leads to serious ecological problems.
-They argue that industrial activities cause pollution, deforestation, and climate change, which threaten the planet's future.
-For instance, excessive carbon emissions from factories and vehicles has contributed to global warming and extreme weather events.
-Many scientists warn that without immediate action, the environmental damage will be irreversible and affect future generations severely.
-Furthermore, they suggest that sustainable practices can actually boost long-term economic benefits through green technologies.
-In my opinion, I believe both economic development and environmental protection are equally important for society's well-being.
-However, I think governments should prioritize sustainable growth over rapid expansion.
-Countries must invest in renewable energy, promote eco-friendly industries, and implement strict environmental regulations.
-This approach ensures that economic progress does not compromise the planet's health for future generations.
-To conclude, while economic growth remains important for human development, it must be balanced with environmental sustainability.
-Only through careful planning and responsible policies can societies achieve prosperity without destroying the natural world that supports all life.`;
+const [grammarFeedback, setGrammarFeedback] = useState<{
+  highlighted_essay: string;
+  feedback_items: Array<{
+    id: string;
+    type: string;
+    category: string;
+    original: string;
+    improved?: string;
+    corrected?: string;
+    explanation: string;
+    band_impact?: string;
+    rule?: string;
+    severity?: string;
+  }>;
+} | null>(null);
 
-  // Enhanced highlighting data - 2 sentences per color type
-  const highlightMapping: Record<string, HighlightData> = {
-    // Red highlights (errors with tooltips)
-    "They believe that industrial expansion create jobs and generate income, which allow people to meet their basic needs.": {
-      type: 'red',
-      tooltip: {
-        category: 'Verb Tense OR Sentence Structure',
-        original: 'industrial expansion create jobs and generate income',
-        corrected: 'industrial expansion creates jobs and generates income',
-        explanation: 'Singular subjects like "industrial expansion" require singular verbs. Use "creates" and "generates" instead of "create" and "generate".',
-        rule: 'Singular subjects take singular verbs',
-        severity: 'High'
-      }
-    },
-    "These nations has lifted millions of people out of poverty and improved infrastructure substantially.": {
-      type: 'red',
-      tooltip: {
-        category: 'Verb Tense OR Sentence Structure',
-        original: 'These nations has lifted',
-        corrected: 'These nations have lifted',
-        explanation: 'Plural subjects like "These nations" require plural auxiliary verbs. Use "have" instead of "has".',
-        rule: 'Plural subjects take plural verbs',
-        severity: 'High'
-      }
-    },
-    
-    // Yellow highlights (vocabulary enhancement with tooltips)
-    "For example, developing countries like China and India have achieved significant economic progress through manufacturing and industrialization.": {
-      type: 'yellow',
-      tooltip: {
-        category: 'Vocabulary Enhancement',
-        original: 'achieved significant economic progress',
-        improved: 'attained substantial economic advancement',
-        explanation: 'Using more sophisticated vocabulary improves the academic tone of the writing.',
-        bandImpact: 'Improves Lexical Resource to Band 7+'
-      }
-    },
-    "Many scientists warn that without immediate action, the environmental damage will be irreversible and affect future generations severely.": {
-      type: 'yellow',
-      tooltip: {
-        category: 'Vocabulary Enhancement',
-        original: 'environmental damage will be irreversible',
-        improved: 'ecological deterioration will be irremediable',
-        explanation: 'Academic synonyms enhance the sophistication and precision of environmental vocabulary.',
-        bandImpact: 'Improves Lexical Resource to Band 7+'
-      }
-    },
-    
-    // Green highlights (good examples with suggestions)
-    "In recent years, sustainable development has become one of the most critical issues facing governments worldwide.": {
-      type: 'green',
-      tooltip: {
-        category: 'Introduction Phrasing',
-        original: 'In recent years, sustainable development has become',
-        improved: 'Over the past decade, sustainable development has emerged as OR In contemporary society, sustainable development represents',
-        explanation: 'This opening effectively establishes the topic\'s relevance and timeliness, creating a strong foundation for the essay.',
-        bandImpact: 'Improves Task Response and Coherence/Cohesion'
-      }
-    },
-    "Only through careful planning and responsible policies can societies achieve prosperity without destroying the natural world that supports all life.": {
-      type: 'green',
-      tooltip: {
-        category: 'Conclusion Phrasing',
-        original: 'Only through careful planning and responsible policies',
-        improved: 'Through strategic planning and accountable governance OR Via comprehensive planning and sustainable policies',
-        explanation: 'This conclusion effectively synthesizes the main arguments while providing a clear recommendation for future action.',
-        bandImpact: 'Improves Task Response and Coherence/Cohesion'
-      }
-    }
-  };
+
+
+
+
 
 const handleStartWriting = () => {
   setStartTime(new Date());
@@ -248,199 +153,85 @@ const calculateCompletionTime = () => {
   setCompletionTime(timeStr);
   return timeStr;
 };
+// Replace this entire useEffect block
 useEffect(() => {
-  // Track mounted state to prevent state updates after unmount
-  let isMounted = true;
-  let controller: AbortController | null = null;
-  let timeoutId: NodeJS.Timeout | null = null;
-
-  const evaluateEssay = async (attempt = 0) => {
-    const cachedFeedback = sessionStorage.getItem(`feedback-${essayContent}`);
-    if (cachedFeedback) {
-    setFeedbackData(JSON.parse(cachedFeedback));
-    setIsLoading(false);
-    return;
-  }
+  const evaluateEssay = async () => {
     try {
-      controller = new AbortController();
-      timeoutId = setTimeout(() => {
-        controller?.abort();
-        console.log('Request timed out after 180 seconds');
-      }, 180000);
+      setIsLoading(true);
+      setError(null);
 
-      if (isMounted) {
-        setIsLoading(true);
-        setError(null);
-        setConnectionError(false);
-        setEvaluationProgress(10); // Initial progress
-      }
-
-      // Update progress when starting evaluation
-      setEvaluationProgress(30);
-
-      const [evaluationResponse, grammarResponse] = await Promise.all([
-        fetch('https://agentwp-api.aihubproduction.com/evaluate-essay', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            prompt: "IELTS Writing Task 2 Prompt", 
-            essay: essayContent 
-          }),
-          signal: controller.signal
-        }).then(async (res) => {
-          setEvaluationProgress(50); // Progress when evaluation request completes
-          return res;
-        }).catch(err => {
-          if (err.name === 'AbortError') {
-            throw new Error('Evaluation request timed out');
-          }
-          throw err;
+      // Evaluate essay
+      const essayResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/evaluate-essay`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          prompt: "IELTS Writing Task 2 Prompt",
+          essay: essayContent,
         }),
-        fetch('https://agentwp-api.aihubproduction.com/check-grammar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            essay: essayContent, 
-            level: grammarLevel 
-          }),
-          signal: controller.signal
-        }).then(async (res) => {
-          setEvaluationProgress(70); // Progress when grammar check completes
-          return res;
-        }).catch(err => {
-          if (err.name === 'AbortError') {
-            throw new Error('Grammar check request timed out');
-          }
-          throw err;
-        })
-      ]);
+      });
 
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
+      if (!essayResponse.ok) {
+        throw new Error(`Essay evaluation failed! status: ${essayResponse.status}`);
       }
 
-      // Only proceed if component is still mounted
-      if (!isMounted) return;
-
-      // Check response statuses
-      if (!evaluationResponse.ok || !grammarResponse.ok) {
-        throw new Error(`HTTP error! Evaluation: ${evaluationResponse.status}, Grammar: ${grammarResponse.status}`);
-      }
-
-      setEvaluationProgress(80); // Progress before processing responses
-
-      const [evaluationResult, grammarResult] = await Promise.all([
-        evaluationResponse.json().catch(() => ({ success: false })),
-        grammarResponse.json().catch(() => ({ success: false }))
-      ]);
-
-      // Process responses
-      const evaluationSuccess = evaluationResult?.success;
-      const grammarSuccess = grammarResult?.success;
-
-      const feedback = evaluationSuccess 
-        ? evaluationResult.data?.data || getSampleFeedbackData(essayContent)
-        : getSampleFeedbackData(essayContent);
-
-      // Handle grammar feedback from backend
-      if (grammarSuccess && grammarResult.data?.feedback_items) {
-        feedback.grammarFeedback = Array.isArray(grammarResult.data.feedback_items)
-          ? grammarResult.data.feedback_items
-          : [];
-      }
-
-      // Add highlighted essay if available
-      if (grammarResult.data?.highlighted_essay) {
-        feedback.highlightedEssay = grammarResult.data.highlighted_essay;
-      }
-
-      // Add stats
-      feedback.stats = {
-        totalWords: essayContent.split(/\s+/).filter(Boolean).length,
-        completionTime: calculateCompletionTime() || 'N/A'
-      };
-
-      if (isMounted) {
+      const essayResult = await essayResponse.json();
+      if (essayResult.success && essayResult.data?.data) {
+        const feedback = essayResult.data.data;
+        const calculatedTime = calculateCompletionTime();
+        if (!feedback.stats) {
+          feedback.stats = {
+            totalWords: essayContent.split(/\s+/).filter(Boolean).length,
+            completionTime: calculatedTime
+          };
+        }
         setFeedbackData(feedback);
-        setEvaluationProgress(100); // Complete
+      } else {
+        throw new Error('Invalid essay response format');
+      }
+
+      // Fetch grammar feedback
+      const grammarResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/check-grammar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          essay: essayContent,
+          level: "Band 6.5" // Adjust as needed
+        }),
+      });
+
+      if (!grammarResponse.ok) {
+        throw new Error(`Grammar check failed! status: ${grammarResponse.status}`);
+      }
+
+      const grammarResult = await grammarResponse.json();
+      if (grammarResult.success && grammarResult.data?.data) {
+        setGrammarFeedback(grammarResult.data.data);
+      } else {
+        throw new Error('Invalid grammar response format');
       }
     } catch (err) {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-
-      // Only handle errors if component is still mounted
-      if (!isMounted) return;
-
       console.error('Evaluation error:', err);
-       if (feedbackData) {
-    sessionStorage.setItem(`feedback-${essayContent}`, JSON.stringify(feedbackData));
-  }
-      let errorMessage = 'Evaluation failed';
-      if (err instanceof Error) {
-        if (err.name === 'AbortError') {
-          errorMessage = 'Request timed out. Please try again.';
-          // Retry logic
-          if (attempt >= MAX_RETRIES) {
-      errorMessage += ' Please try again later or check your internet connection.';
-    }
-        } else if (err.message.includes('Failed to fetch')) {
-          errorMessage = 'Network error. Please check your connection.';
-        } else {
-          errorMessage = err.message;
-        }
-      }
-
-      setError(errorMessage);
-      setConnectionError(true);
-      setEvaluationProgress(0); // Reset progress on error
-
-      // Fallback to sample data
+      setError(err instanceof Error ? err.message : 'Evaluation failed');
       const sampleData = getSampleFeedbackData(essayContent);
       sampleData.stats = {
         totalWords: essayContent.split(/\s+/).filter(Boolean).length,
         completionTime: 'N/A'
       };
       setFeedbackData(sampleData);
+      setGrammarFeedback(null); // No grammar feedback in case of error
     } finally {
-      if (isMounted) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   };
 
-  evaluateEssay(0); // Start with attempt 0
-
-  // Cleanup function
-  return () => {
-    isMounted = false;
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    if (controller) {
-      controller.abort();
-    }
-  };
-  
-}, [essayContent, grammarLevel, retryCount]);
-
-
-
-function isGrammarFeedback(data: any): data is GrammarFeedback[] {
-  if (!Array.isArray(data)) return false;
-  
-  // Check if at least one item has the required fields
-  return data.some(item => 
-    item && 
-    typeof item === 'object' &&
-    'original' in item &&
-    'explanation' in item
-  );
-}
-
-
+  evaluateEssay();
+}, [essayContent]);
 
   const getSampleFeedbackData = (essay: string): FeedbackData => {
     const wordCount = essay.split(/\s+/).filter(Boolean).length || 0;
@@ -531,184 +322,146 @@ function isGrammarFeedback(data: any): data is GrammarFeedback[] {
   };
 
   // Helper function to highlight sentences with multi-color system
-  const highlightEssay = (text: string) => {
-  // First check if we have pre-highlighted HTML from the backend
-  if (feedbackData?.highlightedEssay) {
-    return (
-      <div 
-        className="highlight-section bg-[#fdfdfd] border border-gray-300 rounded-lg p-6" 
-        dangerouslySetInnerHTML={{ __html: feedbackData.highlightedEssay }}
-      />
-    );
-  }
-
-  // Early return with message if no content to analyze
-  if (!text) {
+// Replace the existing highlightEssay function in FeedbackInterface
+const highlightEssay = (htmlContent: string, feedbackItems: Array<{
+  id: string;
+  type: string;
+  category: string;
+  original: string;
+  improved?: string;
+  corrected?: string;
+  explanation: string;
+  band_impact?: string;
+  rule?: string;
+  severity?: string;
+}> | undefined) => {
+  if (!htmlContent || !feedbackItems) {
     return (
       <div className="highlight-section bg-[#fdfdfd] border border-gray-300 rounded-lg p-6">
-        <div className="text-gray-500 text-center">No essay content to analyze</div>
+        <p className="text-base leading-relaxed">No grammar feedback available.</p>
       </div>
     );
   }
 
-  // Early return if no grammar feedback available
-  if (!feedbackData?.grammarFeedback) {
-    return (
-      <div className="highlight-section bg-[#fdfdfd] border border-gray-300 rounded-lg p-6">
-        <div className="text-gray-500 text-center">Grammar analysis not available</div>
-      </div>
-    );
-  }
+  // Clean HTML tags to get plain text
+  const cleanText = htmlContent.replace(/<[^>]+>/g, '').trim();
 
-  // Create a more robust mapping from the API grammar feedback
-  const apiHighlightMapping: Record<string, HighlightData> = {};
+  // Map feedback items by ID for quick lookup
+  const feedbackMap = new Map(feedbackItems.map(item => [item.id, item]));
 
-  feedbackData.grammarFeedback.forEach(item => {
-    if (!item.original) return; // Skip if no original text
-
-    const type: HighlightType = 
-      item.type === 'error' ? 'red' :
-      item.type === 'suggestion' ? 'green' : 'yellow';
-
-    // Normalize the key by trimming and standardizing whitespace
-    const normalizedKey = item.original.trim().replace(/\s+/g, ' ');
-
-    apiHighlightMapping[normalizedKey] = {
-      type,
-      tooltip: {
-        category: item.category || 'Grammar',
-        original: item.original,
-        corrected: item.corrected || '',
-        improved: item.improved || item.suggested || '',
-        explanation: item.explanation || 'No explanation provided',
-        severity: item.severity || 'Medium',
-        bandImpact: item.bandImpact || 'Possible impact on score',
-        rule: item.rule || ''
-      }
-    };
-  });
-
-  // Split text into sentences with better handling of edge cases
-  const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+  // Parse HTML to extract spans with data-id for highlights
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, 'text/html');
+  const spans = doc.querySelectorAll('span[data-id]');
   const result: JSX.Element[] = [];
 
-  // Color configuration object for cleaner code
-  const colorConfig = {
-    red: {
-      className: "inline cursor-pointer hover:opacity-80 transition-opacity px-1 rounded",
-      bgColor: "bg-[#ffcdd2] text-[#c62828]"
-    },
-    yellow: {
-      className: "inline cursor-pointer hover:opacity-80 transition-opacity px-1 rounded",
-      bgColor: "bg-[#fef9c3] text-[#92400e]"
-    },
-    green: {
-      className: "inline cursor-pointer hover:opacity-80 transition-opacity px-1 rounded",
-      bgColor: "bg-[#dcfce7] text-[#166534]"
+  // Split clean text into parts based on feedback items
+  let currentIndex = 0;
+  const highlightedParts: JSX.Element[] = [];
+
+  // Process each span to create highlighted sections with tooltips
+  spans.forEach((span, spanIndex) => {
+    const id = span.getAttribute('data-id');
+    const feedback = feedbackMap.get(id!);
+    if (!feedback) return;
+
+    // Find the position of the span's text in the clean text
+    const spanText = span.textContent || '';
+    const startIndex = cleanText.indexOf(spanText, currentIndex);
+    if (startIndex === -1) return; // Skip if text not found
+
+    // Add text before the span
+    if (startIndex > currentIndex) {
+      highlightedParts.push(
+        <span key={`text-${spanIndex}`}>
+          {cleanText.slice(currentIndex, startIndex)}
+        </span>
+      );
     }
-  };
 
-  sentences.forEach((sentence, index) => {
-    const trimmedSentence = sentence.trim();
-    const normalizedSentence = trimmedSentence.replace(/\s+/g, ' ');
-    
-    // Find matching highlight data with fallback to partial matches
-    const highlightData = apiHighlightMapping[normalizedSentence] || 
-      Object.entries(apiHighlightMapping).find(([key]) => 
-        normalizedSentence.includes(key) || key.includes(normalizedSentence)
-      )?.[1];
+    // Determine styling based on feedback type
+    let className = "inline cursor-pointer hover:opacity-80 transition-opacity px-1 rounded";
+    let bgColor = "";
+    switch (feedback.type) {
+      case 'error':
+        bgColor = "bg-[#ffcdd2] text-[#c62828]";
+        break;
+      case 'improvement':
+        bgColor = "bg-[#fef9c3] text-[#92400e]";
+        break;
+      case 'suggestion':
+        bgColor = "bg-[#dcfce7] text-[#166534]";
+        break;
+    }
 
-    if (highlightData) {
-      const { className, bgColor } = colorConfig[highlightData.type] || colorConfig.yellow;
-
-      // Only show tooltip if we have content to show
-      const showTooltip = highlightData.tooltip && 
-        (highlightData.tooltip.corrected || 
-         highlightData.tooltip.improved || 
-         highlightData.tooltip.explanation);
-
-      if (showTooltip) {
-        const tooltipContent = (
-          <div className="max-w-sm space-y-3">
-            {highlightData.tooltip?.category && (
-              <div>
-                <div className="font-semibold text-sm mb-1 text-yellow-400">Category:</div>
-                <div className="text-xs text-gray-200">{highlightData.tooltip.category}</div>
-              </div>
-            )}
-            <div>
-              <div className="font-semibold text-sm mb-1 text-red-400">Original:</div>
-              <div className="text-xs text-gray-200">{highlightData.tooltip?.original}</div>
+    // Create tooltip content
+    const tooltipContent = (
+      <div className="max-w-sm space-y-3">
+        <div>
+          <div className="font-semibold text-sm mb-1 text-yellow-400">Category:</div>
+          <div className="text-xs text-gray-200">{feedback.category}</div>
+        </div>
+        <div>
+          <div className="font-semibold text-sm mb-1 text-red-400">Original:</div>
+          <div className="text-xs text-gray-200">{feedback.original}</div>
+        </div>
+        {(feedback.improved || feedback.corrected) && (
+          <div>
+            <div className="font-semibold text-sm mb-1 text-green-400">
+              {feedback.type === 'error' ? 'Corrected:' : 'Improved:'}
             </div>
-            {highlightData.type === 'red' && highlightData.tooltip?.corrected && (
-              <div>
-                <div className="font-semibold text-sm mb-1 text-green-400">Corrected:</div>
-                <div className="text-xs text-gray-200">{highlightData.tooltip.corrected}</div>
-              </div>
-            )}
-            {(highlightData.type === 'yellow' || highlightData.type === 'green') && highlightData.tooltip?.improved && (
-              <div>
-                <div className="font-semibold text-sm mb-1 text-green-400">
-                  {highlightData.type === 'green' ? 'Suggested:' : 'Improved:'}
-                </div>
-                <div className="text-xs text-gray-200">{highlightData.tooltip.improved}</div>
-              </div>
-            )}
-            {highlightData.tooltip?.explanation && (
-              <div>
-                <div className="font-semibold text-sm mb-1 text-blue-400">Explanation:</div>
-                <div className="text-xs text-gray-200">{highlightData.tooltip.explanation}</div>
-              </div>
-            )}
-            {highlightData.tooltip?.rule && (
-              <div>
-                <div className="font-semibold text-sm mb-1 text-purple-400">Rule:</div>
-                <div className="text-xs text-gray-200">{highlightData.tooltip.rule}</div>
-              </div>
-            )}
-            {highlightData.tooltip?.severity && (
-              <div>
-                <div className="font-semibold text-sm mb-1 text-orange-400">Severity:</div>
-                <div className="text-xs text-gray-200">{highlightData.tooltip.severity}</div>
-              </div>
-            )}
-            {highlightData.tooltip?.bandImpact && (
-              <div>
-                <div className="font-semibold text-sm mb-1 text-purple-400">Band Impact:</div>
-                <div className="text-xs text-gray-200">{highlightData.tooltip.bandImpact}</div>
-              </div>
-            )}
+            <div className="text-xs text-gray-200">{feedback.improved || feedback.corrected}</div>
           </div>
-        );
+        )}
+        <div>
+          <div className="font-semibold text-sm mb-1 text-blue-400">Explanation:</div>
+          <div className="text-xs text-gray-200">{feedback.explanation}</div>
+        </div>
+        {feedback.band_impact && (
+          <div>
+            <div className="font-semibold text-sm mb-1 text-purple-400">Band Impact:</div>
+            <div className="text-xs text-gray-200">{feedback.band_impact}</div>
+          </div>
+        )}
+        {feedback.rule && (
+          <div>
+            <div className="font-semibold text-sm mb-1 text-purple-400">Rule:</div>
+            <div className="text-xs text-gray-200">{feedback.rule}</div>
+          </div>
+        )}
+        {feedback.severity && (
+          <div>
+            <div className="font-semibold text-sm mb-1 text-orange-400">Severity:</div>
+            <div className="text-xs text-gray-200">{feedback.severity}</div>
+          </div>
+        )}
+      </div>
+    );
 
-        result.push(
-          <Tooltip key={index}>
-            <TooltipTrigger asChild>
-              <span className={`${className} ${bgColor}`}>
-                {sentence}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-gray-800 text-white p-4 max-w-md">
-              {tooltipContent}
-            </TooltipContent>
-          </Tooltip>
-        );
-      } else {
-        result.push(
-          <span key={index} className={`${className} ${bgColor}`}>
-            {sentence}
+    // Add highlighted span with tooltip
+    highlightedParts.push(
+      <Tooltip key={id}>
+        <TooltipTrigger asChild>
+          <span className={`${className} ${bgColor}`}>
+            {spanText}
           </span>
-        );
-      }
-    } else {
-      result.push(<span key={index}>{sentence}</span>);
-    }
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="bg-gray-800 text-white p-4 max-w-md">
+          {tooltipContent}
+        </TooltipContent>
+      </Tooltip>
+    );
 
-    // Add space after sentence if not last
-    if (index < sentences.length - 1) {
-      result.push(<span key={`space-${index}`}> </span>);
-    }
+    // Update current index
+    currentIndex = startIndex + spanText.length;
   });
+
+  // Add any remaining text after the last span
+  if (currentIndex < cleanText.length) {
+    highlightedParts.push(
+      <span key="text-end">{cleanText.slice(currentIndex)}</span>
+    );
+  }
 
   return (
     <div className="highlight-section bg-[#fdfdfd] border border-gray-300 rounded-lg p-6">
@@ -729,29 +482,15 @@ function isGrammarFeedback(data: any): data is GrammarFeedback[] {
         </div>
       </div>
       <p className="text-base leading-relaxed">
-        {result}
+        {highlightedParts}
       </p>
     </div>
   );
 };
-
   const getScorePercentage = (score: number) => {
     return (score / 9) * 100;
   };
-{isLoading && (
-  <div className="space-y-2">
-    <div className="flex justify-between text-sm text-gray-600">
-      <span>Evaluating your essay...</span>
-      <span>{evaluationProgress}%</span>
-    </div>
-    <Progress value={evaluationProgress} className="h-2" />
-    {evaluationProgress > 50 && (
-      <p className="text-xs text-gray-500">
-        This is taking longer than usual. Please wait...
-      </p>
-    )}
-  </div>
-)}
+
   // Add loading and error states
   if (isLoading) {
     return (
@@ -762,31 +501,15 @@ function isGrammarFeedback(data: any): data is GrammarFeedback[] {
     );
   }
 
-{error && (
-  <div className="p-6 space-y-4">
-    <div className="flex items-center gap-4">
-      <AlertTriangle className="h-12 w-12 text-red-500" />
-      <div>
-        <h3 className="text-lg font-medium">Evaluation Issue</h3>
-        <p className="text-sm text-gray-600">{error}</p>
+  if (error) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center h-64">
+        <AlertTriangle className="h-12 w-12 text-red-500" />
+        <p className="mt-4 text-lg text-red-500">{error}</p>
+        <p className="text-sm text-gray-600">Showing sample evaluation data</p>
       </div>
-    </div>
-    <div className="bg-blue-50 p-4 rounded-lg">
-      <h4 className="font-medium text-blue-800 mb-2">What you can do:</h4>
-      <ul className="space-y-1 text-sm text-blue-700">
-        <li>• Check your internet connection</li>
-        <li>• Try again in a few minutes</li>
-        <li>• Review the sample evaluation below</li>
-        {connectionError && (
-          <li>• Contact support if the problem persists</li>
-        )}
-      </ul>
-    </div>
-    <Button onClick={() => setRetryCount(prev => prev + 1)}>
-      Try Again
-    </Button>
-  </div>
-)}
+    );
+  }
 
   if (!feedbackData) {
     return (
@@ -1245,10 +968,10 @@ function isGrammarFeedback(data: any): data is GrammarFeedback[] {
       </div>
 
       {/* Grammar Checker Section */}
-      <div className="container max-w-[1100px] mx-auto mb-6">
-        <h2 className="text-2xl font-bold mb-4">Grammar Checker</h2>
-        {highlightEssay(essayContent || sampleEssay)}
-      </div>
+<div className="container max-w-[1100px] mx-auto mb-6">
+  <h2 className="text-2xl font-bold mb-4">Grammar Checker</h2>
+  {highlightEssay(grammarFeedback?.highlighted_essay || '', grammarFeedback?.feedback_items)}
+</div>
 
       <div className="flex flex-wrap gap-4 justify-center">
         <Button 
