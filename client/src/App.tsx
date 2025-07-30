@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import WritingPractice from "@/pages/writing-practice";
+import WritingTask2 from "@/pages/writing-task-2";
 import Login from "@/pages/login";
 import Blog from "@/pages/blog";
 import WordPressDemo from "@/pages/wordpress-demo";
@@ -25,7 +25,7 @@ function Router() {
       <div className="flex-grow pt-0">
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/writing-practice" component={WritingPractice} />
+          <Route path="/writing-task-2" component={WritingTask2} />
           <Route path="/writing-task-1" component={WritingTask1} />
           <Route path="/writing-task-1/practice" component={WritingTask1Practice} />
           <Route path="/blog" component={Blog} />
@@ -37,7 +37,7 @@ function Router() {
           <Route path="/progress-tracking" component={ProgressTracking} />
           <Route path="/about" component={NotFound} />
           <Route path="/vocabulary" component={NotFound} />
-          <Route path="/progress" component={NotFound} />
+          <Route path="/progress" component={ProgressTracking} />
           <Route component={NotFound} />
         </Switch>
       </div>

@@ -60,7 +60,7 @@ export default function Home() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link href="/writing-practice">
+            <Link href="/writing-task-2">
               <Button className="w-full">
                 Start Practice <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -69,7 +69,7 @@ export default function Home() {
         </Card>
 
 
-        <Card className="flex flex-col">
+        {/* <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileEdit className="h-5 w-5 text-primary" /> Writing Practice
@@ -91,7 +91,7 @@ export default function Home() {
               </Button>
             </Link>
           </CardFooter>
-        </Card>
+        </Card> */}
 
         <Card className="flex flex-col">
           <CardHeader>

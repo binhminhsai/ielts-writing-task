@@ -41,9 +41,14 @@ export default function Header() {
                 About Us
               </button>
             </Link>
-            <Link href="/writing-practice">
-              <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/writing-practice" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
-                Writing Practice
+            <Link href="/writing-task-1">
+              <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/writing-task-1" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
+                Writing Task 1
+              </button>
+            </Link>
+            <Link href="/writing-task-2">
+              <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/writing-task-2" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
+                Writing Task 2
               </button>
             </Link>
             <Link href="/wordcraft">
@@ -106,12 +111,20 @@ export default function Header() {
                 About Us
               </button>
             </Link>
-            <Link href="/writing-practice">
+            <Link href="/writing-task-1">
               <button 
-                className={`w-full text-left py-2.5 px-3 rounded-lg transition-all duration-300 ${location === "/writing-practice" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
+                className={`w-full text-left py-2.5 px-3 rounded-lg transition-all duration-300 ${location === "/writing-task-1" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Writing Practice
+                Writing Task 1
+              </button>
+            </Link>
+            <Link href="/writing-task-2">
+              <button 
+                className={`w-full text-left py-2.5 px-3 rounded-lg transition-all duration-300 ${location === "/writing-task-2" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Writing Task 2
               </button>
             </Link>
             <Link href="/wordcraft">

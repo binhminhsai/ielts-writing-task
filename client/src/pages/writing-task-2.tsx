@@ -4,7 +4,7 @@ import { TestSetup, WritingTestType, DifficultyLevel } from "@/components/writin
 import { WritingInterface } from "@/components/writing-practice/writing-interface";
 import { FeedbackInterface } from "@/components/writing-practice/feedback-interface";
 
-export default function WritingPractice() {
+export default function WritingTask2() {
   const [currentStage, setCurrentStage] = useState<"setup" | "writing" | "feedback">("setup");
   const [essayConfig, setEssayConfig] = useState<{
     testType: WritingTestType;
