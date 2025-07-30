@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileEdit, BookOpen, History, Medal } from "lucide-react";
+import { ArrowRight, FileEdit, BookOpen, History, Medal, BarChart3 } from "lucide-react";
 
 export default function Home() {
   return (
@@ -20,10 +20,10 @@ export default function Home() {
     
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {/* Task 1 */}
-        <Card className="flex flex-col">
+         <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileEdit className="h-5 w-5 text-blue-600" /> Writing Task 1
+              <BarChart3 className="h-5 w-5 text-blue-600" /> Writing Task 1
             </CardTitle>
             <CardDescription>
               Practice academic writing based on visuals like charts and tables.
