@@ -51,11 +51,11 @@ export default function Header() {
                 Writing Task 2
               </button>
             </Link>
-            <Link href="/wordcraft">
+            {/* <Link href="/wordcraft">
               <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/wordcraft" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
                 Vocabulary
               </button>
-            </Link>
+            </Link> */}
             <Link href="/progress">
               <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/progress" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
                 Progress
