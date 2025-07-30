@@ -71,6 +71,7 @@ interface Task1WritingInterfaceProps {
 function Task1OutlineSection({ questionType, question }: { questionType: string, question: string }) {
   const [showOutline, setShowOutline] = useState(true);
   const outline = getTask1Outline(questionType);
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <div className="h-full flex flex-col">
