@@ -16,7 +16,59 @@ export default function Home() {
         </p>
       </div>
 
+   
+    
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {/* Task 1 */}
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileEdit className="h-5 w-5 text-blue-600" /> Writing Task 1
+            </CardTitle>
+            <CardDescription>
+              Practice academic writing based on visuals like charts and tables.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow">
+            <p className="text-gray-600">
+              Write essays from IELTS-style prompts that include bar charts, pie graphs, or tables.
+              Choose your band level and receive structured feedback to improve your writing.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Link href="/writing-task-1">
+              <Button className="w-full">
+                Start Practice <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </CardFooter>
+        </Card>
+
+         {/* Task 2 */}
+         <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileEdit className="h-5 w-5 text-primary" /> Writing Task 2
+            </CardTitle>
+            <CardDescription>
+              Practice writing for different tests and scenarios
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow">
+            <p className="text-gray-600">
+              Write IELTS Task 2 essays on various topics and get personalized band scores and feedback instantly.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Link href="/writing-practice">
+              <Button className="w-full">
+                Start Practice <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </CardFooter>
+        </Card>
+
+
         <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

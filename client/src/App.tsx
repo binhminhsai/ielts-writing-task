@@ -15,6 +15,8 @@ import ProgressTracking from "@/pages/progress-tracking";
 
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import WritingTask1 from "./pages/writing-task-1";
+import WritingTask1Practice from "./pages/writing-task-1-practice";
 
 function Router() {
   return (
@@ -24,6 +26,8 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/writing-practice" component={WritingPractice} />
+          <Route path="/writing-task-1" component={WritingTask1} />
+          <Route path="/writing-task-1/practice" component={WritingTask1Practice} />
           <Route path="/blog" component={Blog} />
           <Route path="/wordpress-demo" component={WordPressDemo} />
           <Route path="/login" component={Login} />
