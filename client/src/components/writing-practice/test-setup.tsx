@@ -119,7 +119,7 @@ export function TestSetup({ onStart }: TestSetupProps) {
 
   return (
     <div className="p-6 border-b border-gray-200 bg-white">
-      <h2 className="text-2xl font-semibold mb-6">English Writing Practice</h2>
+      <h2 className="text-2xl font-semibold mb-6">IELTS Writing Task 2 Practice</h2>
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <Label htmlFor="writing-type" className="mb-3 block">
