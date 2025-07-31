@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Info, Shuffle } from "lucide-react";
+import { Upload, Info, Shuffle, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { ChemicalFlaskLoader } from "@/components/ui/chemical-flask-loader";
@@ -418,11 +418,11 @@ export default function WritingTask1() {
           Use my question
         </Button>
         <Button 
-          className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 text-white hover:bg-[#c2410c] bg-[#ea580c]"
+          className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 text-white hover:bg-[#296DE3] bg-[#3d82f6]"
           onClick={handleRandomQuestion}
         >
-          <Shuffle className="w-4 h-4 mr-2" />
-          Random question
+          <Database className="w-4 h-4 mr-2" />
+          Get question
         </Button>
       </div>
       {/* Chemical Flask Loader */}

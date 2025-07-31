@@ -70,6 +70,7 @@ interface Task1WritingInterfaceProps {
 // Task 1 Outline component with tabs for outline and useful expressions
 function Task1OutlineSection({ questionType, question }: { questionType: string, question: string }) {
   const [showOutline, setShowOutline] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const outline = getTask1Outline(questionType);
 
   return (

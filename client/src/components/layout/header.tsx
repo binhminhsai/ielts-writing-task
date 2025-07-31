@@ -1,12 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { User } from "lucide-react";
+import { User, ChevronDown } from "lucide-react";
 import logoImage from "@assets/ChatGPT Image May 24, 2025, 09_40_14 PM.png";
 
 export default function Header() {
   // Add this to make header accessible from all pages
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [virtualPracticeOpen, setVirtualPracticeOpen] = useState(false);
   
   return (
     <header className="bg-gradient-to-r from-teal-600 via-teal-700 to-teal-600 text-white shadow-lg mb-2 border-b border-teal-500/30">
@@ -41,19 +42,67 @@ export default function Header() {
                 About Us
               </button>
             </Link>
-            <Link href="/writing-practice">
-              <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/writing-practice" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
-                Writing Practice
+            {/* Virtual Practice Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setVirtualPracticeOpen(true)}
+              onMouseLeave={() => setVirtualPracticeOpen(false)}
+            >
+              <button 
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  location === "/writing-practice" || location === "/writing-task-1" 
+                    ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" 
+                    : "text-teal-100 hover:text-white hover:bg-teal-600/50"
+                }`}
+              >
+                Virtual Practice
+              </button>
+              
+              {/* Tooltip-style Dropdown */}
+              {virtualPracticeOpen && (
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 pt-1 z-50">
+                  {/* Invisible bridge to prevent hover gap */}
+                  <div className="w-48 h-1 bg-transparent"></div>
+                  <div className="w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2">
+                    {/* Arrow pointing up */}
+                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                      <div className="w-4 h-4 bg-white border-l border-t border-gray-100 rotate-45"></div>
+                    </div>
+                    
+                    <Link href="/writing-task-1">
+                      <button 
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-150"
+                        onClick={() => setVirtualPracticeOpen(false)}
+                      >
+                        Writing Task 1
+                      </button>
+                    </Link>
+                    
+                    <Link href="/writing-practice">
+                      <button 
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-150"
+                        onClick={() => setVirtualPracticeOpen(false)}
+                      >
+                        Writing Task 2
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+            <Link href="/essay-grading?task=task1">
+              <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/essay-grading" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
+                Essay Grading
               </button>
             </Link>
             <Link href="/wordcraft">
               <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/wordcraft" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
-                Vocabulary
+                Virtual Exam
               </button>
             </Link>
-            <Link href="/progress">
-              <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/progress" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
-                Progress
+            <Link href="/progress-tracking">
+              <button className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${location === "/progress-tracking" ? "bg-white text-teal-700 shadow-lg transform scale-105 font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}>
+                Progress Tracking
               </button>
             </Link>
             <Link href="/wordpress-demo">
@@ -106,28 +155,42 @@ export default function Header() {
                 About Us
               </button>
             </Link>
-            <Link href="/writing-practice">
-              <button 
-                className={`w-full text-left py-2.5 px-3 rounded-lg transition-all duration-300 ${location === "/writing-practice" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Writing Practice
-              </button>
-            </Link>
+            {/* Virtual Practice - Mobile Menu */}
+            <div className="space-y-1">
+              <div className="px-3 py-1">
+                <span className="text-xs font-medium text-teal-200 uppercase tracking-wider">Virtual Practice</span>
+              </div>
+              <Link href="/writing-task-1">
+                <button 
+                  className={`w-full text-left py-2.5 px-6 rounded-lg transition-all duration-300 ${location === "/writing-task-1" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Writing Task 1
+                </button>
+              </Link>
+              <Link href="/writing-practice">
+                <button 
+                  className={`w-full text-left py-2.5 px-6 rounded-lg transition-all duration-300 ${location === "/writing-practice" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Writing Task 2
+                </button>
+              </Link>
+            </div>
             <Link href="/wordcraft">
               <button 
                 className={`w-full text-left py-2.5 px-3 rounded-lg transition-all duration-300 ${location === "/wordcraft" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Vocabulary
+                Virtual Exam
               </button>
             </Link>
-            <Link href="/progress">
+            <Link href="/progress-tracking">
               <button 
-                className={`w-full text-left py-2.5 px-3 rounded-lg transition-all duration-300 ${location === "/progress" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
+                className={`w-full text-left py-2.5 px-3 rounded-lg transition-all duration-300 ${location === "/progress-tracking" ? "bg-white text-teal-700 shadow-lg font-semibold" : "text-teal-100 hover:text-white hover:bg-teal-600/50"}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Progress
+                Progress Tracking
               </button>
             </Link>
             <Link href="/wordpress-demo">

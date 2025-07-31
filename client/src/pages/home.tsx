@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileEdit, BookOpen, History, Medal, BarChart3 } from "lucide-react";
+import { ArrowRight, FileEdit, BookOpen, History, Medal, BarChart3, CheckCircle } from "lucide-react";
 
 export default function Home() {
   return (
@@ -15,12 +15,8 @@ export default function Home() {
           with our comprehensive writing tools.
         </p>
       </div>
-
-   
-    
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {/* Task 1 */}
-         <Card className="flex flex-col">
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-blue-600" /> Writing Task 1
@@ -35,17 +31,25 @@ export default function Home() {
               Choose your band level and receive structured feedback to improve your writing.
             </p>
           </CardContent>
-          <CardFooter>
-            <Link href="/writing-task-1">
-              <Button className="w-full">
-                Start Practice <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+          <CardFooter className="pt-0">
+            <div className="space-y-2 w-full">
+              <Link href="/writing-task-1">
+                <Button className="w-full" variant="default" size="sm">
+                  <FileEdit className="mr-2 h-4 w-4" />
+                  Practice Writing Task 1
+                </Button>
+              </Link>
+              <Link href="/essay-grading?task=task1">
+                <Button className="w-full" variant="outline" size="sm">
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Grade My Writing Task 1
+                </Button>
+              </Link>
+            </div>
           </CardFooter>
         </Card>
 
-         {/* Task 2 */}
-         <Card className="flex flex-col">
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileEdit className="h-5 w-5 text-primary" /> Writing Task 2
@@ -55,65 +59,23 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-grow">
-            <p className="text-gray-600">
-              Write IELTS Task 2 essays on various topics and get personalized band scores and feedback instantly.
-            </p>
+            <p className="text-gray-600">Write essays from IELTS-style prompts that explore opinions, discussions, and real-life scenarios. Get personalized feedback tailored to your target band score</p>
           </CardContent>
-          <CardFooter>
-            <Link href="/writing-practice">
-              <Button className="w-full">
-                Start Practice <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileEdit className="h-5 w-5 text-primary" /> Writing Practice
-            </CardTitle>
-            <CardDescription>
-              Practice writing for different tests and scenarios
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-grow">
-            <p className="text-gray-600">
-              Choose from IELTS, TOEFL, general essays, or business writing. Select
-              your difficulty level and get personalized feedback.
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Link href="/writing-practice">
-              <Button className="w-full">
-                Start Practice <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-green-600" /> Wordcraft
-            </CardTitle>
-            <CardDescription>
-              Expand your vocabulary with targeted word lists
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-grow">
-            <p className="text-gray-600">
-              Access curated vocabulary lists for different topics and writing types.
-              Learn words that will improve your writing score.
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Link href="/wordcraft">
-              <Button className="w-full">
-                Explore Wordcraft <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+          <CardFooter className="pt-0">
+            <div className="space-y-2 w-full">
+              <Link href="/writing-practice">
+                <Button className="w-full" variant="default" size="sm">
+                  <FileEdit className="mr-2 h-4 w-4" />
+                  Practice Writing Task 2
+                </Button>
+              </Link>
+              <Link href="/essay-grading">
+                <Button className="w-full" variant="outline" size="sm">
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Grade My Writing Task 2
+                </Button>
+              </Link>
+            </div>
           </CardFooter>
         </Card>
 
@@ -134,14 +96,13 @@ export default function Home() {
           </CardContent>
           <CardFooter>
             <Link href="/progress-tracking">
-              <Button className="w-full">
+              <Button className="w-full pt-[7.6px] pb-[7.6px] mt-[17px] mb-[17px]">
                 My Progress <span className="ml-4">→</span>
               </Button>
             </Link>
           </CardFooter>
         </Card>
       </div>
-
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-8 text-center border border-purple-100 shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="flex items-center justify-center mb-4">
           <div className="p-3 bg-yellow-100 rounded-full mr-3 transform group-hover:rotate-12 transition-transform duration-300">

@@ -14,12 +14,12 @@ interface SupportingResourcesProps {
   topic: string;
 }
 
-export function SupportingResources({ testType, topic }: SupportingResourcesProps) {
+export async function SupportingResources({ testType, topic }: SupportingResourcesProps) {
   const [showOutline, setShowOutline] = useState(true);
   const [activeTab, setActiveTab] = useState("vocabulary");
   
   const outline = getOutline(testType, topic);
-  const vocabulary = getVocabulary(testType, topic);
+  const vocabulary = await getVocabulary(testType, topic);
   const phrases = getPhrases(testType);
   
   return (

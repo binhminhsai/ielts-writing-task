@@ -17,6 +17,8 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import WritingTask1 from "./pages/writing-task-1";
 import WritingTask1Practice from "./pages/writing-task-1-practice";
+import VirtualExam from "./pages/virtual-exam";
+import EssayGrading from "./pages/essay-grading";
 
 function Router() {
   return (
@@ -24,17 +26,16 @@ function Router() {
       <Header />
       <div className="flex-grow pt-0">
         <Switch>
-          <Route path="/" component={Home} />
+         <Route path="/" component={Home} />
           <Route path="/writing-practice" component={WritingPractice} />
           <Route path="/writing-task-1" component={WritingTask1} />
           <Route path="/writing-task-1/practice" component={WritingTask1Practice} />
           <Route path="/blog" component={Blog} />
           <Route path="/wordpress-demo" component={WordPressDemo} />
           <Route path="/login" component={Login} />
-          <Route path="/wordcraft" component={Wordcraft} />
-          <Route path="/wordcraft/:cardId/words" component={WordcraftWords} />
-          <Route path="/wordcraft/:cardId/words/:wordId/detail" component={WordcraftWordDetail} />
+          <Route path="/wordcraft" component={VirtualExam} />
           <Route path="/progress-tracking" component={ProgressTracking} />
+          <Route path="/essay-grading" component={EssayGrading} />
           <Route path="/about" component={NotFound} />
           <Route path="/vocabulary" component={NotFound} />
           <Route path="/progress" component={NotFound} />

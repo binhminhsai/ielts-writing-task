@@ -103,6 +103,7 @@ interface FeedbackInterfaceProps {
   essayContent: string;
   onTryAgain: () => void;
   onNextPractice: () => void;
+  context?: "writing-practice" | "essay-grading";
 }
 
 export function FeedbackInterface({
