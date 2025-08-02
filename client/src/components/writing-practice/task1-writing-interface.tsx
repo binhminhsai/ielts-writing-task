@@ -72,6 +72,53 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
   const [showOutline, setShowOutline] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const outline = getTask1Outline(questionType);
+  const [data, setData] = useState(null);
+
+  const fetchIELTSData = async () => {
+    setIsLoading(true);
+    try {
+      // Get data from sessionStorage
+      const task1Config = sessionStorage.getItem('task1WritingConfig');
+      if (!task1Config) {
+        throw new Error('No task1WritingConfig found in sessionStorage');
+      }
+
+      const config = JSON.parse(task1Config);
+      
+      // Prepare POST request payload
+      const requestBody = {
+        question: config.question,
+        url: config.apiImageUrl || config.uploadedImageDataUrl,
+        topic: config.questionType,
+        level: `Band ${config.bandLevel}`
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/writing-assistant-task1`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      setData(result?.data?.data);
+      
+    } catch (err) {
+      console.error('Error fetching IELTS data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIELTSData();
+  }, []);
 
   return (
     <div className="h-full flex flex-col">
@@ -110,7 +157,9 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                 <Layers className="h-4 w-4" />
                 Sample - Bài mẫu
               </h4>
-              <p className="text-xs mb-4 text-gray-600 italic bg-gray-50 p-2 rounded-md border border-gray-100">Sample answer with paragraph-by-paragraph breakdown</p>
+              <p className="text-xs mb-4 text-gray-600 italic bg-gray-50 p-2 rounded-md border border-gray-100">
+                Sample answer with paragraph-by-paragraph breakdown
+              </p>
 
               <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: '430px' }}>
                 <Accordion type="single" collapsible className="w-full space-y-2">
@@ -131,7 +180,15 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <div className="text-xs text-gray-700 leading-relaxed">
-                        The line graph illustrates the consumption of energy in the United States from 1980, with projections extending to 2030, categorized by different fuel types.
+                        {isLoading ? (
+                          <div className="space-y-2">
+                            <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-4/5"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                          </div>
+                        ) : (
+                          data?.sample?.task1_outline?.paragraph_1_introduction || 'No introduction available'
+                        )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -153,7 +210,15 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <div className="text-xs text-gray-700 leading-relaxed">
-                        Overall, the graph indicates a general increase in energy consumption across most sources over the period. While petroleum consistently remained the dominant energy source, natural gas experienced the most substantial growth. Conversely, nuclear energy exhibited relative stability, and renewables, although starting from a low base, showed a gradual upward trend.
+                        {isLoading ? (
+                          <div className="space-y-2">
+                            <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
+                          </div>
+                        ) : (
+                          data?.sample?.task1_outline?.paragraph_2_overview || 'No overview available'
+                        )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -175,7 +240,16 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <div className="text-xs text-gray-700 leading-relaxed">
-                        Petroleum held the largest share of energy consumption, starting at approximately 35 quadrillion BTU in 1980. It rose slightly to around 37 quadrillion BTU by 2008 and is projected to remain at this level until 2030. Natural gas consumption, however, saw a significant increase, rising from about 20 quadrillion BTU in 1980 to roughly 24 quadrillion BTU in 2008.
+                        {isLoading ? (
+                          <div className="space-y-2">
+                            <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-4/5"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
+                          </div>
+                        ) : (
+                          data?.sample?.task1_outline?.paragraph_3_first_main_feature || 'No first main feature available'
+                        )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -197,7 +271,16 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                     </AccordionTrigger>
                     <AccordionContent className="p-3 bg-white">
                       <div className="text-xs text-gray-700 leading-relaxed">
-                        Coal consumption increased steadily from 15 quadrillion BTU in 1980 to approximately 22 quadrillion BTU in 2008 and is expected to remain stable until 2030. In contrast, nuclear energy remained relatively constant at around 8 quadrillion BTU throughout the period. Renewables, starting from a low base of 3 quadrillion BTU in 1980, increased to about 7 quadrillion BTU by 2008 and are projected to reach 12 quadrillion BTU by 2030.
+                        {isLoading ? (
+                          <div className="space-y-2">
+                            <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-4/5"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
+                          </div>
+                        ) : (
+                          data?.sample?.task1_outline?.paragraph_4_second_main_feature || 'No second main feature available'
+                        )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -241,37 +324,37 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                       <div className="space-y-3">
                           <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
                             <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Chart Type:</span> Line Graph
+                              <span className="text-[#1fb2aa] font-bold">Chart Type:</span> {data?.analyze_question?.task1_analysis?.['1_image_description']?.chart_type}
                             </p>
                           </div>
                           
                           <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
                             <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Main Subject:</span> Energy consumption in the USA by different sources (petroleum, natural gas, coal, nuclear, renewables)
+                              <span className="text-[#1fb2aa] font-bold">Main Subject:</span> {data?.analyze_question?.task1_analysis?.['1_image_description']?.main_subject}
                             </p>
                           </div>
                           
                           <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
                             <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Unit of Measurement:</span> Quadrillion BTU (British Thermal Units)
+                              <span className="text-[#1fb2aa] font-bold">Unit of Measurement:</span> {data?.analyze_question?.task1_analysis?.['1_image_description']?.unit_measurement}
                             </p>
                           </div>
                           
                           <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
                             <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Time Period:</span> From 1980 to 2030 (projected)
+                              <span className="text-[#1fb2aa] font-bold">Time Period:</span>  {data?.analyze_question?.task1_analysis?.['1_image_description']?.time_period}
                             </p>
                           </div>
                           
                           <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
                             <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Verb Tense Used:</span> Combination of Past tense for the period 1980–2008 and Future tense for the projected period 2008–2030
+                              <span className="text-[#1fb2aa] font-bold">Verb Tense Used:</span>  {data?.analyze_question?.task1_analysis?.['1_image_description']?.verb_tense}
                             </p>
                           </div>
                           
                           <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
                             <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Chart Summary:</span> The line graph shows the changes in energy consumption in the USA over time, categorized by different energy sources, including projections for the future.
+                              <span className="text-[#1fb2aa] font-bold">Chart Summary:</span>  {data?.analyze_question?.task1_analysis?.['1_image_description']?.chart_summary}
                             </p>
                           </div>
                         </div>
@@ -305,30 +388,32 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                           <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                             <p className="text-xs font-bold text-[#1fb2aa] mb-2">Question Requirement:</p>
                             <p className="text-xs text-[#374151]">
-                              Summarise the information by selecting and reporting the main features, and make comparisons where relevant
-                            </p>
+                              {data?.analyze_question?.task1_analysis?.['2_analyse_question']?.question_requirement}                 
+                                </p>
                           </div>
                           <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                             <p className="text-xs font-bold text-[#1fb2aa] mb-2">Key Tasks:</p>
-                            <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Summarize information about the energy consumption of each energy source.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Compare the changes in energy consumption between different energy sources.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Highlight key trends and projections for the future.</span>
-                              </li>
-                            </ul>
+                                <ul className="text-xs text-[#374151] space-y-1 ml-3">
+                                {data?.analyze_question?.task1_analysis?.['2_analyse_question']?.key_tasks?.map((task, index) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span className="text-xs mt-0.5">•</span>
+                                    <span>{task}</span>
+                                  </li>
+                                )) || (
+                                  // Fallback loading skeleton if data is not available
+                                  Array.from({ length: 3 }, (_, index) => (
+                                    <li key={index} className="flex items-start gap-2">
+                                      <span className="text-xs mt-0.5">•</span>
+                                      <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                                    </li>
+                                  ))
+                                )}
+                                </ul>
                           </div>
                           <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
                             <p className="text-xs font-bold text-[#1fb2aa] mb-2">Band Guidance:</p>
                             <p className="text-xs text-[#374151]">
-                              With a target of Band 6.0: Adequate overview with main trends identified. Cover key features but details may be incomplete. Clear purpose.
+                                {data?.analyze_question?.task1_analysis?.['2_analyse_question']?.band_guidance}                               
                             </p>
                           </div>
                         </div>
@@ -336,140 +421,137 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                     </AccordionContent>
                   </AccordionItem>
 
-                  {/* Accordion 3: Identify Main Features */}
-                  <AccordionItem 
-                    value="identify-features"
-                    className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
-                  >
-                    <AccordionTrigger 
-                      className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
-                          3
-                        </span>
-                        Identify Main Features
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-3 bg-white">
-                      {isLoading ? (
-                        <div className="space-y-3">
-                          <ShimmerCard className="border-gray-100" />
-                          <ShimmerCard className="border-gray-100" />
-                          <ShimmerCard className="border-gray-100" />
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Overall Trends:</p>
-                            <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Petroleum remains the largest energy source consumed, with a slight upward trend from about 35 quadrillion BTU in 1980 to around 37 quadrillion BTU by 2030.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Natural Gas shows significant growth, from about 20 quadrillion BTU in 1980 to around 32 quadrillion BTU by 2030.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Coal has a slow and steady upward trend, from about 15 quadrillion BTU in 1980 to around 22 quadrillion BTU by 2030.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Nuclear energy remains relatively stable, fluctuating around 8 quadrillion BTU throughout the period.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Renewables show growth, especially in the projected period, from about 3 quadrillion BTU in 1980 to around 12 quadrillion BTU by 2030.</span>
-                              </li>
-                            </ul>
-                          </div>
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Key Data Points:</p>
-                            <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>In 2008, petroleum accounted for about 37 quadrillion BTU, natural gas about 24 quadrillion BTU, coal about 22 quadrillion BTU, nuclear about 8 quadrillion BTU, and renewables about 7 quadrillion BTU.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Projected for 2030, petroleum is expected to account for about 37 quadrillion BTU, natural gas about 32 quadrillion BTU, coal about 22 quadrillion BTU, nuclear about 8 quadrillion BTU, and renewables about 12 quadrillion BTU.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Petroleum has always been the largest energy source consumed throughout the period.</span>
-                              </li>
-                            </ul>
-                          </div>
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Significant Changes:</p>
-                            <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Significant growth of natural gas, especially from 2000 onwards.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Growth of renewables in the projected period 2008-2030.</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-xs mt-0.5">•</span>
-                                <span>Relative stability of nuclear energy.</span>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
+                {/* Accordion 3: Identify Main Features */}
+<AccordionItem 
+  value="identify-features"
+  className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+>
+  <AccordionTrigger 
+    className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
+  >
+    <span className="flex items-center gap-2">
+      <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
+        3
+      </span>
+      Identify Main Features
+    </span>
+  </AccordionTrigger>
+  <AccordionContent className="p-3 bg-white">
+    {isLoading ? (
+      <div className="space-y-3">
+        <ShimmerCard className="border-gray-100" />
+        <ShimmerCard className="border-gray-100" />
+        <ShimmerCard className="border-gray-100" />
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {/* Overall Trends Section */}
+        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+          <p className="text-xs font-bold text-[#1fb2aa] mb-2">Overall Trends:</p>
+          <ul className="text-xs text-[#374151] space-y-1 ml-3">
+            {data?.analyze_question?.task1_analysis?.['3_identify_main_features']?.overall_trends?.map((trend, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="text-xs mt-0.5">•</span>
+                <span>{trend}</span>
+              </li>
+            )) || (
+              <li className="flex items-start gap-2">
+                <span className="text-xs mt-0.5">•</span>
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+              </li>
+            )}
+          </ul>
+        </div>
 
-                  {/* Accordion 4: Jobs To Be Done */}
-                  <AccordionItem 
-                    value="jobs-to-be-done"
-                    className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
-                  >
-                    <AccordionTrigger 
-                      className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
-                          4
-                        </span>
-                        Jobs To Be Done
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-3 bg-white">
-                      {isLoading ? (
-                        <div className="space-y-3">
-                          <ShimmerCard className="border-gray-100" />
-                          <ShimmerCard className="border-gray-100" />
-                          <ShimmerCard className="border-gray-100" />
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Task 1:</p>
-                            <p className="text-xs text-[#374151]">
-                              Introduction paragraph - paraphrase the question and introduce the line graph showing energy consumption in the USA from 1980 to 2030, categorized by source.
-                            </p>
-                          </div>
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Task 2:</p>
-                            <p className="text-xs text-[#374151]">
-                              Overview paragraph - summarize 2-3 main trends: petroleum remains the largest source, natural gas shows significant growth, renewables increase in the future.
-                            </p>
-                          </div>
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Task 3:</p>
-                            <p className="text-xs text-[#374151]">
-                              Body paragraphs - Body 1 describes petroleum and natural gas (specific data), Body 2 describes coal, nuclear, and renewables (data and comparisons)
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
+        {/* Key Data Points Section */}
+        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+          <p className="text-xs font-bold text-[#1fb2aa] mb-2">Key Data Points:</p>
+          <ul className="text-xs text-[#374151] space-y-1 ml-3">
+            {data?.analyze_question?.task1_analysis?.['3_identify_main_features']?.key_data_points?.map((point, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="text-xs mt-0.5">•</span>
+                <span>{point}</span>
+              </li>
+            )) || (
+              <li className="flex items-start gap-2">
+                <span className="text-xs mt-0.5">•</span>
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+              </li>
+            )}
+          </ul>
+        </div>
+
+        {/* Significant Changes Section */}
+        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+          <p className="text-xs font-bold text-[#1fb2aa] mb-2">Significant Changes:</p>
+          <ul className="text-xs text-[#374151] space-y-1 ml-3">
+            {data?.analyze_question?.task1_analysis?.['3_identify_main_features']?.significant_changes?.map((change, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="text-xs mt-0.5">•</span>
+                <span>{change}</span>
+              </li>
+            )) || (
+              <li className="flex items-start gap-2">
+                <span className="text-xs mt-0.5">•</span>
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+              </li>
+            )}
+          </ul>
+        </div>
+      </div>
+    )}
+  </AccordionContent>
+</AccordionItem>
+
+{/* Accordion 4: Jobs To Be Done */}
+<AccordionItem
+  value="jobs-to-be-done"
+  className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+>
+  <AccordionTrigger
+    className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
+  >
+    <span className="flex items-center gap-2">
+      <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
+        4
+      </span>
+      Jobs To Be Done
+    </span>
+  </AccordionTrigger>
+  <AccordionContent className="p-3 bg-white">
+    {isLoading ? (
+      <div className="space-y-3">
+        <ShimmerCard className="border-gray-100" />
+        <ShimmerCard className="border-gray-100" />
+        <ShimmerCard className="border-gray-100" />
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {data?.analyze_question?.task1_analysis?.['4_jobs_to_done']?.map((job, index) => (
+          <div key={index} className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+            <p className="text-xs font-bold text-[#1fb2aa] mb-2">
+              {job.split(':')[0]}:
+            </p>
+            <p className="text-xs text-[#374151]">
+              {job.split(':').slice(1).join(':').trim()}
+            </p>
+          </div>
+        )) || (
+          // Fallback skeleton if no data
+          Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+              <div className="h-3 bg-gray-200 rounded animate-pulse w-16 mb-2"></div>
+              <div className="space-y-1">
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    )}
+  </AccordionContent>
+</AccordionItem>
                 </Accordion>
               </div>
             </div>
@@ -494,123 +576,159 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
 }
 
 // Task 1 Vocabulary and Phrases component
+// Interface for Task1VocabularyWord
+interface Task1VocabularyWord {
+  word: string;
+  partOfSpeech: 'N' | 'V' | 'Adj' | 'Adv' | 'Phrase' | 'Collocation';
+  difficulty: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+  meaning: string;
+  chartFunction: string;
+  example: string;
+  type?: string;
+}
+
+// Interface for API response vocabulary item
+interface ApiVocabularyItem {
+  word: string;
+  type: string;
+  cefr_level: string;
+  meaning: string;
+  chart_function: string;
+  example: string;
+}
+
+// Interface for API response collocation item
+interface ApiCollocationItem {
+  phrase: string;
+  type: string;
+  cefr_level: string;
+  meaning: string;
+  chart_function: string;
+  example: string;
+}
+
+// Interface for the full API response
+interface ApiResponse {
+  success: boolean;
+  data: {
+    data: {
+      task: string;
+      chart_specific_vocabulary: ApiVocabularyItem[];
+      trend_collocations: ApiCollocationItem[];
+    };
+    original_type: string;
+    converted: boolean;
+    success: boolean;
+  };
+  message: string;
+  timestamp: string;
+}
+
+// Interface for session storage data
+interface SessionStorageData {
+  question: string;
+  questionType: string;
+  bandLevel: string;
+  timeLimit: string;
+  hasGeneratedQuestion: boolean;
+  apiImageUrl: string | null;
+  uploadedImageDataUrl: string | null;
+}
+
 function Task1ResourcesSection({ questionType }: { questionType: string }) {
-  const [activeTab, setActiveTab] = useState("vocabulary");
+  const [activeTab, setActiveTab] = useState('vocabulary');
   const [showWordBank, setShowWordBank] = useState(false);
   const [vocabDisplayCount, setVocabDisplayCount] = useState(10);
   const [phraseDisplayCount, setPhraseDisplayCount] = useState(8);
   const [isLoadingVocab, setIsLoadingVocab] = useState(false);
   const [isLoadingPhrases, setIsLoadingPhrases] = useState(false);
   const [isLoadingWordBank, setIsLoadingWordBank] = useState(false);
-  
-  const allVocabulary = getTask1Vocabulary(questionType);
-  const phrases = getTask1Phrases();
+  const [vocabularyWords, setVocabularyWords] = useState<Task1VocabularyWord[]>([]);
+  const [phraseWords, setPhraseWords] = useState<Task1VocabularyWord[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filter vocabulary for each tab
-  const vocabularyWords = allVocabulary.flatMap(category => 
-    category.words
-      .filter(word => ["N", "V", "Adj", "Adv"].includes(word.partOfSpeech))
-      .map(word => ({ ...word, type: category.type }))
-  );
+  // Fetch vocabulary from API
+  useEffect(() => {
+    const fetchVocabulary = async () => {
+      setIsLoadingWordBank(true);
+      try {
+        // Retrieve and parse session storage data
+        const sessionDataRaw = sessionStorage.getItem('task1WritingConfig'); // Adjust key as needed
+        if (!sessionDataRaw) {
+          throw new Error('No task data found in session storage');
+        }
 
-  // Additional vocabulary data (matching Task 2 styling)
-  const additionalVocabulary = [
-    {
-      word: "Sustainable",
-      partOfSpeech: "Adj",
-      difficulty: "B2",
-      meaning: "Có thể duy trì được lâu dài, bền vững",
-      chartFunction: "Mô tả sự phát triển lâu dài",
-      example: "Companies are trying to develop more sustainable business practices.",
-      type: "positive"
-    },
-    {
-      word: "Implement",
-      partOfSpeech: "V",
-      difficulty: "B2",
-      meaning: "Thực hiện, triển khai",
-      chartFunction: "Mô tả việc thực hiện các biện pháp",
-      example: "The government plans to implement new environmental regulations next year.",
-      type: "neutral"
-    },
-    {
-      word: "Unprecedented",
-      partOfSpeech: "Adj",
-      difficulty: "C1",
-      meaning: "Chưa từng có trước đây, chưa từng thấy",
-      chartFunction: "Mô tả mức độ cao bất thường",
-      example: "The pandemic caused unprecedented disruption to global supply chains.",
-      type: "neutral"
-    },
-    {
-      word: "Mitigate",
-      partOfSpeech: "V",
-      difficulty: "C1",
-      meaning: "Làm giảm, làm dịu bớt",
-      chartFunction: "Mô tả sự giảm thiểu tác động tiêu cực",
-      example: "Companies are taking steps to mitigate their environmental impact.",
-      type: "positive"
-    }
-  ];
+        const sessionData: SessionStorageData = JSON.parse(sessionDataRaw);
+        const { question, bandLevel, apiImageUrl } = sessionData;
 
-  // Combine vocabulary words
-  const allVocabularyWords = [...vocabularyWords, ...additionalVocabulary];
+        // Validate required fields
+        if (!question || !bandLevel || !apiImageUrl) {
+          throw new Error('Missing required data (question, bandLevel, or apiImageUrl) in session storage');
+        }
 
-  // Get phrase words from vocabulary data
-  const phraseWords = allVocabulary.flatMap(category => 
-    category.words
-      .filter(word => word.partOfSpeech === "Phrase")
-      .map(word => ({ ...word, type: category.type }))
-  );
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/generate-vocabulary-task1`, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            question,
+            url: apiImageUrl,
+            level: `Band ${bandLevel}`,
+          }),
+        });
 
-  // Additional collocations data
-  const additionalCollocations = [
-    {
-      word: "Show an upward trend",
-      partOfSpeech: "Collocations",
-      difficulty: "B2",
-      meaning: "Thể hiện xu hướng tăng",
-      chartFunction: "Mô tả xu hướng tăng trưởng",
-      example: "The graph shows an upward trend in online shopping.",
-      type: "positive"
-    },
-    {
-      word: "Remain stable",
-      partOfSpeech: "Collocations",
-      difficulty: "B1",
-      meaning: "Duy trì ổn định",
-      chartFunction: "Mô tả sự ổn định không thay đổi",
-      example: "House prices remained stable throughout the year.",
-      type: "neutral"
-    },
-    {
-      word: "Experience a decline",
-      partOfSpeech: "Collocations",
-      difficulty: "B2",
-      meaning: "Trải qua sự suy giảm",
-      chartFunction: "Mô tả xu hướng giảm sút",
-      example: "The industry experienced a decline in profits.",
-      type: "negative"
-    },
-    {
-      word: "Reach its peak",
-      partOfSpeech: "Collocations",
-      difficulty: "B2",
-      meaning: "Đạt đỉnh cao nhất",
-      chartFunction: "Mô tả điểm cao nhất trên biểu đồ",
-      example: "Sales reached their peak during the holiday season.",
-      type: "positive"
-    }
-  ];
+        if (!response.ok) {
+          throw new Error('Failed to fetch vocabulary data');
+        }
 
-  // Combine phrase words with additional collocations
-  const allPhraseWords = [...phraseWords, ...additionalCollocations];
+        const data: ApiResponse = await response.json();
+        if (data.success && data.data.success) {
+          // Map chart-specific vocabulary
+          const vocab: Task1VocabularyWord[] = data.data.data.chart_specific_vocabulary.map((item) => ({
+            word: item.word,
+            partOfSpeech: item.type as 'N' | 'V' | 'Adj' | 'Adv' | 'Phrase' | 'Collocation',
+            difficulty: item.cefr_level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
+            meaning: item.meaning,
+            chartFunction: item.chart_function,
+            example: item.example,
+            type: 'neutral',
+          }));
+
+          // Map trend collocations
+          const phrases: Task1VocabularyWord[] = data.data.data.trend_collocations.map((item) => ({
+            word: item.phrase,
+            partOfSpeech: 'Collocation',
+            difficulty: item.cefr_level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
+            meaning: item.meaning,
+            chartFunction: item.chart_function,
+            example: item.example,
+            type: 'neutral',
+          }));
+
+          setVocabularyWords(vocab);
+          setPhraseWords(phrases);
+        } else {
+          throw new Error(data.message || 'API returned an error');
+        }
+      } catch (err) {
+        setError('Error fetching vocabulary data. Please try again later.');
+        console.error(err);
+      } finally {
+        setIsLoadingWordBank(false);
+        setShowWordBank(true);
+      }
+    };
+
+    fetchVocabulary();
+  }, []);
 
   // Handle loading more words
   const handleLoadMoreVocab = () => {
     setIsLoadingVocab(true);
     setTimeout(() => {
-      setVocabDisplayCount(prevCount => prevCount + 10);
+      setVocabDisplayCount((prevCount) => prevCount + 10);
       setIsLoadingVocab(false);
     }, 600);
   };
@@ -618,57 +736,73 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
   const handleLoadMorePhrases = () => {
     setIsLoadingPhrases(true);
     setTimeout(() => {
-      setPhraseDisplayCount(prevCount => prevCount + 10);
+      setPhraseDisplayCount((prevCount) => prevCount + 10);
       setIsLoadingPhrases(false);
     }, 600);
   };
 
-  // Handle unified word bank button with 5-second loading animation
-  const handleExploreWordBank = () => {
-    setIsLoadingWordBank(true);
-    setTimeout(() => {
-      setIsLoadingWordBank(false);
-      setShowWordBank(true);
-    }, 5000);
-  };
-
   // Words to display based on current count limits
-  const displayedVocabWords = allVocabularyWords.slice(0, vocabDisplayCount);
-  const displayedPhraseWords = allPhraseWords.slice(0, phraseDisplayCount);
+  const displayedVocabWords = vocabularyWords.slice(0, vocabDisplayCount);
+  const displayedPhraseWords = phraseWords.slice(0, phraseDisplayCount);
 
   // Check if there are more words to load
-  const hasMoreVocab = vocabDisplayCount < allVocabularyWords.length;
-  const hasMorePhrases = phraseDisplayCount < allPhraseWords.length;
+  const hasMoreVocab = vocabDisplayCount < vocabularyWords.length;
+  const hasMorePhrases = phraseDisplayCount < phraseWords.length;
 
   return (
     <Card className="mt-6 p-0 border-0 bg-transparent shadow-none">
-      <Tabs 
-        defaultValue="vocabulary" 
+      <Tabs
+        defaultValue="vocabulary"
         value={activeTab}
         onValueChange={setActiveTab}
         className="relative"
       >
         <div className="mb-4 relative">
           <TabsList className="w-full flex gap-1 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
-            <TabsTrigger 
-              value="vocabulary" 
+            <TabsTrigger
+              value="vocabulary"
               className="flex-1 text-sm py-2.5 px-4 font-medium rounded-lg transition-all flex items-center justify-center gap-2
-                      hover:bg-gray-50
-                      data-[state=active]:border-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:font-bold"
+                        hover:bg-gray-50
+                        data-[state=active]:border-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:font-bold"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                <path d="M12 20V4"></path><path d="M20 8h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"></path><path d="M4 8h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4"></path>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M12 20V4"></path>
+                <path d="M20 8h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"></path>
+                <path d="M4 8h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4"></path>
               </svg>
               Chart-specific Vocabulary
             </TabsTrigger>
-            <TabsTrigger 
-              value="phrases" 
+            <TabsTrigger
+              value="phrases"
               className="flex-1 text-sm py-2.5 px-4 font-medium rounded-lg transition-all flex items-center justify-center gap-2
-                      hover:bg-gray-50
-                      data-[state=active]:border-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:font-bold"
+                        hover:bg-gray-50
+                        data-[state=active]:border-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:font-bold"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
               </svg>
               Trend collocations
             </TabsTrigger>
@@ -676,70 +810,67 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
         </div>
 
         <TabsContent value="vocabulary" className="p-0 min-h-[200px]">
-          {isLoadingWordBank ? (
+          {error ? (
+            <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
+              <p className="text-red-600 font-medium text-base text-center">{error}</p>
+            </div>
+          ) : isLoadingWordBank ? (
             <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
               <BookLoader message="Flipping through our vocabulary archive..." />
             </div>
-          ) : !showWordBank ? (
-            <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
-              <Button
-                variant="outline"
-                size="sm"
-                className="mb-4 bg-white hover:bg-gray-50 shadow-sm border-gray-200 px-4"
-                onClick={handleExploreWordBank}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 mr-2 text-primary">
-                  <path d="M12 20V4"></path><path d="M20 8h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"></path><path d="M4 8h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4"></path>
-                </svg>
-                Explore Word Bank
-              </Button>
-              <p className="text-gray-700 font-medium text-base mb-2 text-center">Click to explore helpful vocabulary!</p>
-              <p className="text-primary font-medium text-sm text-center">Build your writing skills with relevant words. 😉</p>
-            </div>
           ) : (
             <div className="space-y-6">
-              {/* Vocabulary Section */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                    <path d="M12 20V4"></path><path d="M20 8h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"></path><path d="M4 8h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4"></path>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="M12 20V4"></path>
+                    <path d="M20 8h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"></path>
+                    <path d="M4 8h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4"></path>
                   </svg>
                   Vocabulary
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                   {displayedVocabWords.map((word, index) => (
-                      <div 
-                        key={`word-${index}`}
-                        className="p-2.5 rounded-lg border border-primary/30 bg-primary/5 shadow-sm hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                          <span className="font-semibold text-sm text-primary">{word.word}</span>
-                          <div className="text-xs font-medium px-1.5 py-0.5 bg-teal-100 text-teal-700 rounded-full">
-                            {word.partOfSpeech}
-                          </div>
-                          <div className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full">
-                            {word.difficulty}
-                          </div>
+                    <div
+                      key={`word-${index}`}
+                      className="p-2.5 rounded-lg border border-primary/30 bg-primary/5 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                        <span className="font-semibold text-sm text-primary">{word.word}</span>
+                        <div className="text-xs font-medium px-1.5 py-0.5 bg-teal-100 text-teal-700 rounded-full">
+                          {word.partOfSpeech}
                         </div>
-                        <p className="text-xs text-gray-700 mb-1">
-                          <span className="font-medium">Meaning:</span> {word.meaning}
-                        </p>
-                        <p className="text-xs mb-1" style={{ color: '#374151' }}>
-                          <span className="font-medium">Chart Function:</span> {word.chartFunction}
-                        </p>
-                        <p className="text-xs text-gray-600 italic border-t border-gray-200 pt-1 mt-1">
-                          <span className="font-medium not-italic">Example:</span> {word.example}
-                        </p>
+                        <div className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full">
+                          {word.difficulty}
+                        </div>
                       </div>
-                    )
-                  )}
+                      <p className="text-xs text-gray-700 mb-1">
+                        <span className="font-medium">Meaning:</span> {word.meaning}
+                      </p>
+                      <p className="text-xs mb-1" style={{ color: '#374151' }}>
+                        <span className="font-medium">Chart Function:</span> {word.chartFunction}
+                      </p>
+                      <p className="text-xs text-gray-600 italic border-t border-gray-200 pt-1 mt-1">
+                        <span className="font-medium not-italic">Example:</span> {word.example}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-
-                {/* Load more button for vocabulary */}
                 {hasMoreVocab && (
                   <div className="flex justify-center mt-4 mb-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={handleLoadMoreVocab}
                       className="text-primary border-primary/30 hover:border-primary text-xs px-6 py-1.5 h-auto shadow-sm"
                       size="sm"
@@ -747,16 +878,44 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
                     >
                       {isLoadingVocab ? (
                         <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           Loading...
                         </>
                       ) : (
                         <>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 mr-2">
-                            <path d="M12 8v8"></path><path d="M8 12h8"></path>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-3.5 w-3.5 mr-2"
+                          >
+                            <path d="M12 8v8"></path>
+                            <path d="M8 12h8"></path>
                           </svg>
                           Load More Words
                         </>
@@ -770,67 +929,48 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
         </TabsContent>
 
         <TabsContent value="phrases" className="p-0 min-h-[200px]">
-          {isLoadingWordBank ? (
+          {error ? (
+            <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
+              <p className="text-red-600 font-medium text-base text-center">{error}</p>
+            </div>
+          ) : isLoadingWordBank ? (
             <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
               <BookLoader message="Flipping through our vocabulary archive..." />
-            </div>
-          ) : !showWordBank ? (
-            <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
-              <Button
-                variant="outline"
-                size="sm"
-                className="mb-4 bg-white hover:bg-gray-50 shadow-sm border-gray-200 px-4"
-                onClick={handleExploreWordBank}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 mr-2 text-primary">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-                Explore Word Bank
-              </Button>
-              <p className="text-gray-700 font-medium text-base mb-2 text-center">Click to explore useful collocations!</p>
-              <p className="text-primary font-medium text-sm text-center">Master natural word combinations. 😉</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 {displayedPhraseWords.map((phrase, index) => (
-                    <div 
-                      key={`phrase-${index}`}
-                      className="p-2.5 rounded-lg border border-primary/30 bg-primary/5 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                        <span className="font-semibold text-sm text-primary">{phrase.word}</span>
-                        <div className="text-xs font-medium px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">
-                          Collocation
-                        </div>
-                        <div className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full">
-                          {phrase.difficulty}
-                        </div>
+                  <div
+                    key={`phrase-${index}`}
+                    className="p-2.5 rounded-lg border border-primary/30 bg-primary/5 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                      <span className="font-semibold text-sm text-primary">{phrase.word}</span>
+                      <div className="text-xs font-medium px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                        Collocation
                       </div>
-                      <p className="text-xs text-gray-700 mb-1">
-                        <span className="font-medium">Meaning:</span> {phrase.meaning}
-                      </p>
-                      <p className="text-xs mb-1" style={{ color: '#374151' }}>
-                        <span className="font-medium">Chart Function:</span> {phrase.chartFunction}
-                      </p>
-                      <p className="text-xs text-gray-600 italic border-t border-gray-200 pt-1 mt-1">
-                        <span className="font-medium not-italic">Example:</span> {phrase.example}
-                      </p>
+                      <div className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full">
+                        {phrase.difficulty}
+                      </div>
                     </div>
-                  )
-                )}
-
-                {/* Fill in empty cell if odd number of phrases */}
-                {displayedPhraseWords.length % 2 !== 0 && (
-                  <div className="hidden md:block" />
-                )}
+                    <p className="text-xs text-gray-700 mb-1">
+                      <span className="font-medium">Meaning:</span> {phrase.meaning}
+                    </p>
+                    <p className="text-xs mb-1" style={{ color: '#374151' }}>
+                      <span className="font-medium">Chart Function:</span> {phrase.chartFunction}
+                    </p>
+                    <p className="text-xs text-gray-600 italic border-t border-gray-200 pt-1 mt-1">
+                      <span className="font-medium not-italic">Example:</span> {phrase.example}
+                    </p>
+                  </div>
+                ))}
+                {displayedPhraseWords.length % 2 !== 0 && <div className="hidden md:block" />}
               </div>
-
-              {/* Load more button for phrases */}
               {hasMorePhrases && (
                 <div className="flex justify-center mt-4 mb-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={handleLoadMorePhrases}
                     className="text-primary border-primary/30 hover:border-primary text-xs px-6 py-1.5 h-auto shadow-sm"
                     size="sm"
@@ -838,16 +978,44 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
                   >
                     {isLoadingPhrases ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Loading...
                       </>
                     ) : (
                       <>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 mr-2">
-                          <path d="M12 8v8"></path><path d="M8 12h8"></path>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-3.5 w-3.5 mr-2"
+                        >
+                          <path d="M12 8v8"></path>
+                          <path d="M8 12h8"></path>
                         </svg>
                         Load More Phrases
                       </>
@@ -863,111 +1031,7 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
   );
 }
 
-// Chart component for Task 1 data visualization
-function Task1Chart() {
-  const chartData = {
-    labels: ['2010', '2011', '2012', '2013', '2014', '2015'],
-    datasets: [
-      {
-        label: 'Mathematics (Male)',
-        data: [65, 68, 72, 75, 78, 82],
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'Mathematics (Female)',
-        data: [62, 66, 70, 74, 77, 80],
-        borderColor: 'rgb(236, 72, 153)',
-        backgroundColor: 'rgba(236, 72, 153, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'Science (Male)',
-        data: [58, 61, 65, 68, 71, 75],
-        borderColor: 'rgb(34, 197, 94)',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'Science (Female)',
-        data: [55, 59, 63, 66, 69, 73],
-        borderColor: 'rgb(168, 85, 247)',
-        backgroundColor: 'rgba(168, 85, 247, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'English (Male)',
-        data: [72, 74, 76, 78, 80, 83],
-        borderColor: 'rgb(245, 158, 11)',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        tension: 0.1,
-      },
-    ],
-  };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          font: {
-            size: 11
-          }
-        }
-      },
-      title: {
-        display: true,
-        text: 'High School Competency Exam Pass Rates by Subject and Gender (2010-2015)',
-        font: {
-          size: 12
-        }
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 100,
-        ticks: {
-          font: {
-            size: 10
-          }
-        },
-        title: {
-          display: true,
-          text: 'Pass Rate (%)',
-          font: {
-            size: 11
-          }
-        }
-      },
-      x: {
-        ticks: {
-          font: {
-            size: 10
-          }
-        },
-        title: {
-          display: true,
-          text: 'Year',
-          font: {
-            size: 11
-          }
-        }
-      }
-    },
-  };
-
-  return (
-    <div className="bg-white rounded-md p-4 mb-3 border-2 border-gray-200 shadow-sm">
-      <div style={{ height: '300px' }}>
-        <Line data={chartData} options={options} />
-      </div>
-    </div>
-  );
-}
 
 export default function Task1WritingInterface({ question, questionType, bandLevel, timeLimit }: Task1WritingInterfaceProps) {
   const [essayContent, setEssayContent] = useState("");
@@ -978,7 +1042,28 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showLoadingPage, setShowLoadingPage] = useState(false);
+  const [questionTest, setQuestion] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
+  useEffect(() => {
+    // Retrieve config from sessionStorage
+    const config = sessionStorage.getItem('task1WritingConfig');
+    if (config) {
+      try {
+        const parsedConfig = JSON.parse(config);
+        if (parsedConfig.question) {
+          setQuestion(parsedConfig.question.replace(/^\*\*IELTS Writing Task 1:\*\*\s*/, '').trim());
+        }
+        if (parsedConfig.apiImageUrl) {
+          setImageUrl(parsedConfig.apiImageUrl);
+        }
+        // Note: uploadedImage is a File object and cannot be stored directly in sessionStorage.
+        // If you need to handle uploadedImage, it would require a different approach (e.g., storing as a data URL).
+      } catch (error) {
+        console.error('Error parsing sessionStorage config:', error);
+      }
+    }
+  }, []);
   const { formattedTime, isRunning, startTimer, updateTimer } = useTimer({
     initialMinutes: timeLimit === "no-limit" ? 0 : parseInt(timeLimit),
     onTimeUp: () => setShowTimeUpDialog(true),
@@ -1009,6 +1094,7 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
       setShowErrorDialog(true);
       return;
     }
+    sessionStorage.setItem('task1EssayContent', essayContent);
     setShowLoadingPage(true);
   };
 
@@ -1060,11 +1146,25 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
         <div className="lg:w-3/5">
           <div className="bg-gradient-to-r from-cyan-50 to-teal-50 rounded-lg p-6 mb-4 border-2 border-cyan-300 shadow-sm">
             <div className="text-teal-800 font-bold text-sm mb-3">IELTS Writing Task 1:</div>
-            <div className="text-gray-800 text-sm leading-relaxed">The bar chart below shows the percentage of students who passed their high school competency exams, by subject and gender, during the period 2010-2011. Summarise the information by selecting and reporting the main features and make comparisons where relevant.</div>
+            <div className="text-gray-800 text-sm leading-relaxed">{questionTest || "No question available. Please generate or select a question."}</div>
           </div>
 
-          <Task1Chart />
-
+  {imageUrl ? (
+            <div className="bg-white rounded-md p-4 mb-3 border-2 border-gray-200 shadow-sm">
+              <img
+                src={imageUrl}
+                alt="Task 1 Visual"
+                className="w-full max-h-[400px] object-contain rounded-md"
+                onError={() => {
+                  console.error('Failed to load image');
+                }}
+              />
+            </div>
+          ) : (
+            <div className="bg-white rounded-md p-4 mb-3 border-2 border-gray-200 shadow-sm text-gray-600 text-sm">
+              No image available. Please generate or upload an image.
+            </div>
+          )}
           <div className="flex items-center justify-between mb-2 h-8">
             <Timer 
               time={formattedTime()} 

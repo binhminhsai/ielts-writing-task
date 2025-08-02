@@ -3,137 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Info, Shuffle, Database } from "lucide-react";
+import { Upload, Info, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { ChemicalFlaskLoader } from "@/components/ui/chemical-flask-loader";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip as ChartTooltip,
-  Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  ChartTooltip,
-  Legend
-);
-
-// Chart component for Task 1 preview
-function Task1PreviewChart() {
-  const chartData = {
-    labels: ['2010', '2011', '2012', '2013', '2014', '2015'],
-    datasets: [
-      {
-        label: 'Mathematics (Male)',
-        data: [65, 68, 72, 75, 78, 82],
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'Mathematics (Female)',
-        data: [62, 66, 70, 74, 77, 80],
-        borderColor: 'rgb(236, 72, 153)',
-        backgroundColor: 'rgba(236, 72, 153, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'Science (Male)',
-        data: [58, 61, 65, 68, 71, 75],
-        borderColor: 'rgb(34, 197, 94)',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'Science (Female)',
-        data: [55, 59, 63, 66, 69, 73],
-        borderColor: 'rgb(168, 85, 247)',
-        backgroundColor: 'rgba(168, 85, 247, 0.1)',
-        tension: 0.1,
-      },
-      {
-        label: 'English (Male)',
-        data: [72, 74, 76, 78, 80, 83],
-        borderColor: 'rgb(245, 158, 11)',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        tension: 0.1,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          font: {
-            size: 11
-          }
-        }
-      },
-      title: {
-        display: true,
-        text: 'High School Competency Exam Pass Rates by Subject and Gender (2010-2015)',
-        font: {
-          size: 12
-        }
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 100,
-        ticks: {
-          font: {
-            size: 10
-          }
-        },
-        title: {
-          display: true,
-          text: 'Pass Rate (%)',
-          font: {
-            size: 11
-          }
-        }
-      },
-      x: {
-        ticks: {
-          font: {
-            size: 10
-          }
-        },
-        title: {
-          display: true,
-          text: 'Year',
-          font: {
-            size: 11
-          }
-        }
-      }
-    },
-  };
-
-  return (
-    <div className="bg-white rounded-lg border-2 border-gray-200 shadow-sm" style={{ height: '300px', padding: '16px' }}>
-      <div style={{ height: '268px' }}>
-        <Line data={chartData} options={options} />
-      </div>
-    </div>
-  );
-}
 
 export default function WritingTask1() {
   const [questionType, setQuestionType] = useState("");
@@ -144,18 +17,30 @@ export default function WritingTask1() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewQuestion, setPreviewQuestion] = useState("");
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
-  const [hasGeneratedChart, setHasGeneratedChart] = useState(false);
+  const [apiImageUrl, setApiImageUrl] = useState<string | null>(null);
+  const [hasGeneratedQuestion, setHasGeneratedQuestion] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<'use-my-question' | 'random-question' | null>(null);
   
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-
+  // Map questionType to API-compatible topic
+  const mapQuestionTypeToTopic = (type: string) => {
+    const typeMap: { [key: string]: string } = {
+      "line-graph": "Line Graph",
+      "bar-chart": "Bar Chart",
+      "pie-chart": "Pie Chart",
+      "process-diagram": "Process Diagram",
+      "table": "Table",
+      "map": "Map",
+      "multiple-graphs": "Multiple Graphs",
+    };
+    return typeMap[type] || "General";
+  };
 
   // Button handler functions
   const handleUseMyQuestion = () => {
-    // Check if both question text and image are provided
     if (!question.trim() || !uploadedImage) {
       toast({
         title: "Missing Requirements",
@@ -172,40 +57,66 @@ export default function WritingTask1() {
   const handleCompleteUseMyQuestion = () => {
     setPreviewQuestion(`**IELTS Writing Task 1:** ${question.trim()}`);
     setShowPreview(true);
-    setHasGeneratedChart(false); // This is from user input, not generated
+    setHasGeneratedQuestion(false);
+    setApiImageUrl(null); // Clear API image if user uploads their own
     setIsLoading(false);
   };
 
-  const handleRandomQuestion = () => {
+  const handleRandomQuestion = async () => {
+    if (!questionType) {
+      toast({
+        title: "Missing Question Type",
+        description: "Please select a question type before generating a random question.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoadingAction('random-question');
     setIsLoading(true);
-  };
 
-  const handleCompleteRandomQuestion = () => {
-    const randomQuestions = [
-      "The diagram below shows the process of making soft cheese. Summarise the information by selecting and reporting the main features and make comparisons where relevant.",
-      "The bar chart below shows the percentage of students who passed their high school competency exams, by subject and gender, during the period 2010-2015. Summarise the information by selecting and reporting the main features and make comparisons where relevant.",
-      "The line graph below shows the consumption of fish and some different kinds of meat in a European country between 1979 and 2004. Summarise the information by selecting and reporting the main features and make comparisons where relevant.",
-      "The table below shows the percentage of mobile phone owners using various mobile phone features. Summarise the information by selecting and reporting the main features and make comparisons where relevant.",
-      "The pie charts below show the comparison of different kinds of energy production of France in two years. Summarise the information by selecting and reporting the main features and make comparisons where relevant."
-    ];
-    
-    const randomIndex = Math.floor(Math.random() * randomQuestions.length);
-    const selectedQuestion = randomQuestions[randomIndex];
-    
-    // DO NOT fill the question into the textarea - keep it empty for user input
-    // Only set the preview question and display the chart
-    setPreviewQuestion(`**IELTS Writing Task 1:** ${selectedQuestion}`);
-    setShowPreview(true);
-    setHasGeneratedChart(true);
-    setIsLoading(false);
-    
-    // DO NOT set uploadedImage - keep upload box in default state
-    
-    toast({
-      title: "Question and chart generated",
-      description: "Random Task 1 question with corresponding chart is ready for practice.",
-    });
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/generate-question-task1`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic: mapQuestionTypeToTopic(questionType),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (!result.success || !result.data?.data?.question || !result.data?.data?.image_url) {
+        throw new Error('Invalid API response structure');
+      }
+
+      const { question, image_url } = result.data.data;
+      setPreviewQuestion(`**IELTS Writing Task 1:** ${question.trim()}`);
+      setApiImageUrl(image_url);
+      setShowPreview(true);
+      setHasGeneratedQuestion(true);
+      setUploadedImage(null); // Clear user-uploaded image
+      setIsLoading(false);
+
+      toast({
+        title: "Question and image generated",
+        description: "Random Task 1 question with corresponding image is ready for practice.",
+      });
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+        title: "Error generating question",
+        description: "Failed to fetch random question. Please try again.",
+        variant: "destructive",
+      });
+      console.error('API Error:', error);
+    }
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -227,6 +138,7 @@ export default function WritingTask1() {
       const file = e.dataTransfer.files[0];
       if (file.type.startsWith('image/')) {
         setUploadedImage(file);
+        setApiImageUrl(null); // Clear API image if user uploads their own
         toast({
           title: "Image uploaded successfully",
           description: `${file.name} has been uploaded.`,
@@ -246,6 +158,7 @@ export default function WritingTask1() {
       const file = e.target.files[0];
       if (file.type.startsWith('image/')) {
         setUploadedImage(file);
+        setApiImageUrl(null); // Clear API image if user uploads their own
         toast({
           title: "Image uploaded successfully",
           description: `${file.name} has been uploaded.`,
@@ -260,31 +173,39 @@ export default function WritingTask1() {
     }
   };
 
-  const handleStartWriting = () => {
-    // Check if we have a valid preview with either uploaded image or generated chart
-    if (!showPreview || !previewQuestion.trim() || (!uploadedImage && !hasGeneratedChart)) {
-      toast({
-        title: "Required fields missing",
-        description: "Please enter your Task 1 question and either upload an image or generate a random question with chart.",
-        variant: "destructive",
-      });
-      return;
-    }
+const handleStartWriting = async () => {
+  if (!showPreview || !previewQuestion.trim() || (!uploadedImage && !apiImageUrl)) {
+    toast({
+      title: "Required fields missing",
+      description: "Please enter your Task 1 question and either upload an image or generate a random question with image.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    // Save configuration to sessionStorage
-    const config = {
-      question: previewQuestion,
-      questionType: questionType || "general",
-      bandLevel: bandLevel || "6.0",
-      timeLimit: timeLimit,
-      hasGeneratedChart: hasGeneratedChart
-    };
-    
-    sessionStorage.setItem('task1WritingConfig', JSON.stringify(config));
-    
-    // Navigate to writing interface
-    setLocation('/writing-task-1/practice');
+  let uploadedImageDataUrl: string | null = null;
+  if (uploadedImage) {
+    // Convert uploaded image to Data URL
+    uploadedImageDataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(uploadedImage);
+    });
+  }
+
+  const config = {
+    question: previewQuestion,
+    questionType: questionType || "general",
+    bandLevel: bandLevel || "6.0",
+    timeLimit: timeLimit,
+    hasGeneratedQuestion: hasGeneratedQuestion,
+    apiImageUrl: apiImageUrl,
+    uploadedImageDataUrl: uploadedImageDataUrl, // Store Data URL for user-uploaded image
   };
+  
+  sessionStorage.setItem('task1WritingConfig', JSON.stringify(config));
+  setLocation('/writing-task-1/practice');
+};
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -363,10 +284,10 @@ export default function WritingTask1() {
           value={question}
           onChange={(e) => {
             setQuestion(e.target.value);
-            // If user manually edits the question, reset generated chart state
-            if (hasGeneratedChart && e.target.value !== question) {
-              setHasGeneratedChart(false);
+            if (hasGeneratedQuestion && e.target.value !== question) {
+              setHasGeneratedQuestion(false);
               setShowPreview(false);
+              setApiImageUrl(null);
             }
           }}
           className="min-h-[80px] text-sm text-gray-600"
@@ -431,8 +352,6 @@ export default function WritingTask1() {
         onComplete={() => {
           if (loadingAction === 'use-my-question') {
             handleCompleteUseMyQuestion();
-          } else if (loadingAction === 'random-question') {
-            handleCompleteRandomQuestion();
           }
           setLoadingAction(null);
         }}
@@ -449,8 +368,23 @@ export default function WritingTask1() {
               </p>
             </div>
             
-            {/* Chart Preview - Only show for generated charts */}
-            {hasGeneratedChart && <Task1PreviewChart />}
+            {/* Image Preview - Show either uploaded image or API image */}
+            {(uploadedImage || apiImageUrl) && (
+              <div className="bg-white rounded-lg border-2 border-gray-200 shadow-sm p-4">
+                <img
+                  src={uploadedImage ? URL.createObjectURL(uploadedImage) : apiImageUrl!}
+                  alt="Task 1 Visual"
+                  className="w-full max-h-[400px] object-contain rounded-md"
+                  onError={() => {
+                    toast({
+                      title: "Image load error",
+                      description: "Failed to load the image. Please try again.",
+                      variant: "destructive",
+                    });
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

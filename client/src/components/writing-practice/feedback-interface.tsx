@@ -674,37 +674,49 @@ const highlightEssay = (htmlContent: string, feedbackItems: Array<{
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="vocabulary-enhancement" className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                    <AccordionTrigger className="text-sm font-medium py-2 px-3 hover:no-underline bg-gradient-to-r from-purple-50 to-transparent hover:from-purple-100">
-                      <span className="text-gray-800">Vocabulary Enhancement</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-3 bg-white">
-                      <ul className="text-gray-700 leading-relaxed space-y-1 text-sm">
-                        {feedbackData.overall_assessment.vocabulary_enhancement.map((item, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-sm">•</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
+<AccordionItem value="vocabulary-enhancement" className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+  <AccordionTrigger className="text-sm font-medium py-2 px-3 hover:no-underline bg-gradient-to-r from-purple-50 to-transparent hover:from-purple-100">
+    <span className="text-gray-800">Vocabulary Enhancement</span>
+  </AccordionTrigger>
+  <AccordionContent className="p-3 bg-white">
+    {feedbackData?.overall_assessment?.vocabulary_enhancement?.length ? (
+      <ul className="text-gray-700 leading-relaxed space-y-1 text-sm">
+        {feedbackData.overall_assessment.vocabulary_enhancement.map((item, index) => (
+          <li key={index} className="flex items-start gap-2">
+            <span className="text-sm">•</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-gray-700 leading-relaxed text-sm">
+        No vocabulary enhancement suggestions available.
+      </p>
+    )}
+  </AccordionContent>
+</AccordionItem>
 
-                  <AccordionItem value="grammar-focus" className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                    <AccordionTrigger className="text-sm font-medium py-2 px-3 hover:no-underline bg-gradient-to-r from-indigo-50 to-transparent hover:from-indigo-100">
-                      <span className="text-gray-800">Grammar Focus</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-3 bg-white">
-                      <ul className="text-gray-700 leading-relaxed space-y-1 text-sm">
-                        {feedbackData.overall_assessment.grammar_focus.map((item, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-sm">•</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
+<AccordionItem value="grammar-focus" className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+  <AccordionTrigger className="text-sm font-medium py-2 px-3 hover:no-underline bg-gradient-to-r from-indigo-50 to-transparent hover:from-indigo-100">
+    <span className="text-gray-800">Grammar Focus</span>
+  </AccordionTrigger>
+  <AccordionContent className="p-3 bg-white">
+    {feedbackData?.overall_assessment?.grammar_focus?.length ? (
+      <ul className="text-gray-700 leading-relaxed space-y-1 text-sm">
+        {feedbackData.overall_assessment.grammar_focus.map((item, index) => (
+          <li key={index} className="flex items-start gap-2">
+            <span className="text-sm">•</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-gray-700 leading-relaxed text-sm">
+        No grammar focus suggestions available.
+      </p>
+    )}
+  </AccordionContent>
+</AccordionItem>
 
                   <AccordionItem value="next-steps" className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                     <AccordionTrigger className="text-sm font-medium py-2 px-3 hover:no-underline bg-gradient-to-r from-green-50 to-transparent hover:from-green-100">
