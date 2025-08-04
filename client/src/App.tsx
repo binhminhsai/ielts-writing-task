@@ -19,6 +19,11 @@ import WritingTask1 from "./pages/writing-task-1";
 import WritingTask1Practice from "./pages/writing-task-1-practice";
 import VirtualExam from "./pages/virtual-exam";
 import EssayGrading from "./pages/essay-grading";
+import { AuthProvider } from "./components/contexts/AuthContext";
+import Register from "./pages/register";
+import ForgotPassword from "./pages/forgot-password";
+import VerifyEmail from "./pages/verify-email";
+import MyAccount from "./pages/my-account";
 
 function Router() {
   return (
@@ -26,13 +31,20 @@ function Router() {
       <Header />
       <div className="flex-grow pt-0">
         <Switch>
-         <Route path="/" component={Home} />
+          <Route path="/" component={Home} />
           <Route path="/writing-practice" component={WritingPractice} />
           <Route path="/writing-task-1" component={WritingTask1} />
-          <Route path="/writing-task-1/practice" component={WritingTask1Practice} />
+          <Route
+            path="/writing-task-1/practice"
+            component={WritingTask1Practice}
+          />
           <Route path="/blog" component={Blog} />
           <Route path="/wordpress-demo" component={WordPressDemo} />
           <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
+          <Route path="/forgot-password" component={ForgotPassword} />
+          <Route path="/verify-email" component={VerifyEmail} />
+          <Route path="/my-account" component={MyAccount} />
           <Route path="/wordcraft" component={VirtualExam} />
           <Route path="/progress-tracking" component={ProgressTracking} />
           <Route path="/essay-grading" component={EssayGrading} />
@@ -50,8 +62,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <AuthProvider>
+        <Router />
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
