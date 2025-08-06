@@ -21,3 +21,8 @@ SWD392.Server/bin/
 /Repository/bin
 /Service/bin
 DAL/Migrations/20250620050600_FixApplication.cs
+/Ielts-System/BusinessObject/obj
+/Ielts-System/BusinessObject/bin
+/Ielts-System/DAL/bin
+/Ielts-System/DAL/obj
+/Ielts-System/BusinessObject/bin
