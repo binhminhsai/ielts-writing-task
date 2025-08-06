@@ -4,3 +4,21 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+# Ignore Visual Studio folder
+.vs/
+node_modules/
+# Ignore server object files
+SWD392.Server/obj/
+SWD392.Server/bin/
+/BO/obj
+/DAL/obj
+/Repo/obj
+/Services/obj
+/Services/obj
+/BO/bin
+/DAL/bin
+/Repo/bin
+/Services/bin
+/swd392.client/obj
+/SWD392.Server/wwwroot
+DAL/Migrations/20250620050600_FixApplication.cs
