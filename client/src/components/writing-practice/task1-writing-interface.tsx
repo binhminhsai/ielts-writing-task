@@ -10,7 +10,7 @@ import { Editor } from "@/components/ui/editor";
 import { Timer } from "@/components/ui/timer";
 import { WordCounter } from "@/components/ui/word-counter";
 import { useTimer } from "@/hooks/use-timer";
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -36,7 +36,12 @@ import { getTask1Phrases, task1PhraseCategories } from "@/data/task1-phrases";
 import { Task1FeedbackInterface } from "./task1-feedback-interface";
 import { Link } from "wouter";
 import { InteractiveLoadingPage } from "@/components/ui/interactive-loading-page";
-import { ShimmerLoader, ShimmerCard, ShimmerList, ShimmerText } from "@/components/ui/shimmer-loader";
+import {
+  ShimmerLoader,
+  ShimmerCard,
+  ShimmerList,
+  ShimmerText,
+} from "@/components/ui/shimmer-loader";
 import { BookLoader } from "@/components/ui/book-loader";
 import {
   Chart as ChartJS,
@@ -47,8 +52,9 @@ import {
   Title,
   Tooltip as ChartTooltip,
   Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+import { ChemicalFlaskLoader } from "../ui/chemical-flask-loader";
 
 ChartJS.register(
   CategoryScale,
@@ -68,49 +74,59 @@ interface Task1WritingInterfaceProps {
 }
 
 // Task 1 Outline component with tabs for outline and useful expressions
-function Task1OutlineSection({ questionType, question }: { questionType: string, question: string }) {
+function Task1OutlineSection({
+  questionType,
+  question,
+}: {
+  questionType: string;
+  question: string;
+}) {
   const [showOutline, setShowOutline] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const outline = getTask1Outline(questionType);
   const [data, setData] = useState(null);
+  const [isLoadingTaskAnalysis, setIsLoadingTaskAnalysis] = useState(false);
+  const [showTaskAnalysis, setShowTaskAnalysis] = useState(false);
 
   const fetchIELTSData = async () => {
     setIsLoading(true);
     try {
       // Get data from sessionStorage
-      const task1Config = sessionStorage.getItem('task1WritingConfig');
+      const task1Config = sessionStorage.getItem("task1WritingConfig");
       if (!task1Config) {
-        throw new Error('No task1WritingConfig found in sessionStorage');
+        throw new Error("No task1WritingConfig found in sessionStorage");
       }
 
       const config = JSON.parse(task1Config);
-      
+
       // Prepare POST request payload
       const requestBody = {
         question: config.question,
         url: config.apiImageUrl || config.uploadedImageDataUrl,
         topic: config.questionType,
-        level: `Band ${config.bandLevel}`
+        level: `Band ${config.bandLevel}`,
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/writing-assistant-task1`, {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      });
-      
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/writing-assistant-task1`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
       setData(result?.data?.data);
-      
     } catch (err) {
-      console.error('Error fetching IELTS data:', err);
+      console.error("Error fetching IELTS data:", err);
     } finally {
       setIsLoading(false);
     }
@@ -120,23 +136,34 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
     fetchIELTSData();
   }, []);
 
+  const handleRevealTaskAnalysis = () => {
+    setIsLoadingTaskAnalysis(true);
+    setTimeout(() => {
+      setIsLoadingTaskAnalysis(false);
+      setShowTaskAnalysis(true);
+    }, 5000);
+  };
+
   return (
     <div className="h-full flex flex-col">
       {showOutline ? (
-        <Tabs defaultValue="expressions" className="w-full h-full flex flex-col">
+        <Tabs
+          defaultValue="expressions"
+          className="w-full h-full flex flex-col"
+        >
           <div className="mb-4 relative">
             <TabsList className="w-full flex gap-1 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
-              <TabsTrigger 
-                value="expressions" 
+              <TabsTrigger
+                value="expressions"
                 className="flex-1 text-sm py-2.5 px-4 font-medium rounded-lg transition-all flex items-center justify-center gap-2
                         hover:bg-gray-50
                         data-[state=active]:border-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:font-bold"
               >
                 <Smile className="h-4 w-4" />
-                Analyze Question
+                Question Analysis
               </TabsTrigger>
-              <TabsTrigger 
-                value="outline" 
+              <TabsTrigger
+                value="outline"
                 className="flex-1 text-sm py-2.5 px-4 font-medium rounded-lg transition-all flex items-center justify-center gap-2
                         hover:bg-gray-50
                         data-[state=active]:border-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:font-bold"
@@ -147,10 +174,10 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
             </TabsList>
           </div>
 
-          <TabsContent 
-            value="outline" 
+          <TabsContent
+            value="outline"
             className="flex-1 overflow-y-auto custom-scrollbar mt-0 rounded-b-lg rounded-tr-lg border border-gray-200 bg-white p-4 shadow-md"
-            style={{ height: '500px' }}
+            style={{ height: "500px" }}
           >
             <div>
               <h4 className="font-semibold text-primary mb-3 text-sm flex items-center gap-1.5">
@@ -161,16 +188,21 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                 Sample answer with paragraph-by-paragraph breakdown
               </p>
 
-              <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: '430px' }}>
-                <Accordion type="single" collapsible className="w-full space-y-2">
+              <div
+                className="overflow-y-auto custom-scrollbar"
+                style={{ maxHeight: "430px" }}
+              >
+                <Accordion
+                  type="single"
+                  collapsible
+                  className="w-full space-y-2"
+                >
                   {/* Accordion 1: Paragraph 1: Introduction */}
-                  <AccordionItem 
+                  <AccordionItem
                     value="paragraph-1"
                     className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
                   >
-                    <AccordionTrigger 
-                      className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-                    >
+                    <AccordionTrigger className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10">
                       <span className="flex items-center gap-2">
                         <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
                           1
@@ -187,20 +219,20 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                             <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
                           </div>
                         ) : (
-                          data?.sample?.task1_outline?.paragraph_1_introduction || 'No introduction available'
+                          data?.sample?.task1_outline
+                            ?.paragraph_1_introduction ||
+                          "No introduction available"
                         )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
 
                   {/* Accordion 2: Paragraph 2: Overview */}
-                  <AccordionItem 
+                  <AccordionItem
                     value="paragraph-2"
                     className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
                   >
-                    <AccordionTrigger 
-                      className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-                    >
+                    <AccordionTrigger className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10">
                       <span className="flex items-center gap-2">
                         <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
                           2
@@ -217,20 +249,19 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                             <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
                           </div>
                         ) : (
-                          data?.sample?.task1_outline?.paragraph_2_overview || 'No overview available'
+                          data?.sample?.task1_outline?.paragraph_2_overview ||
+                          "No overview available"
                         )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
 
                   {/* Accordion 3: Paragraph 3: First Main Feature */}
-                  <AccordionItem 
+                  <AccordionItem
                     value="paragraph-3"
                     className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
                   >
-                    <AccordionTrigger 
-                      className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-                    >
+                    <AccordionTrigger className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10">
                       <span className="flex items-center gap-2">
                         <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
                           3
@@ -248,20 +279,20 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                             <div className="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
                           </div>
                         ) : (
-                          data?.sample?.task1_outline?.paragraph_3_first_main_feature || 'No first main feature available'
+                          data?.sample?.task1_outline
+                            ?.paragraph_3_first_main_feature ||
+                          "No first main feature available"
                         )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
 
                   {/* Accordion 4: Paragraph 4: Second Main Feature */}
-                  <AccordionItem 
+                  <AccordionItem
                     value="paragraph-4"
                     className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
                   >
-                    <AccordionTrigger 
-                      className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-                    >
+                    <AccordionTrigger className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10">
                       <span className="flex items-center gap-2">
                         <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
                           4
@@ -279,7 +310,9 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
                             <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
                           </div>
                         ) : (
-                          data?.sample?.task1_outline?.paragraph_4_second_main_feature || 'No second main feature available'
+                          data?.sample?.task1_outline
+                            ?.paragraph_4_second_main_feature ||
+                          "No second main feature available"
                         )}
                       </div>
                     </AccordionContent>
@@ -288,272 +321,399 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
               </div>
             </div>
           </TabsContent>
-
-          <TabsContent 
-            value="expressions" 
+          <TabsContent
+            value="expressions"
             className="flex-1 overflow-y-auto custom-scrollbar mt-0 rounded-b-lg rounded-tr-lg border border-gray-200 bg-white p-4 shadow-md"
-            style={{ height: '500px' }}
+            style={{ height: "500px" }}
           >
             <div>
               <h4 className="font-semibold text-primary mb-3 text-sm flex items-center gap-1.5">
                 <Smile className="h-4 w-4" />
-                Analyze Question - Phân tích câu hỏi
+                Question Analysis - Phân tích câu hỏi
               </h4>
               <p className="text-xs mb-4 text-gray-600 italic bg-gray-50 p-2 rounded-md border border-gray-100">
                 Detailed analysis of the Task 1 question and visual data
               </p>
 
-              <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: '430px' }}>
-                <Accordion type="single" collapsible className="w-full space-y-2">
-                  {/* Accordion 1: Image Description */}
-                  <AccordionItem 
-                    value="image-description"
-                    className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+              {isLoadingTaskAnalysis ? (
+                <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[350px]">
+                  <ChemicalFlaskLoader isVisible={true} onComplete={() => {}} />
+                  <p className="text-sm font-medium text-gray-600 mt-4">
+                    Preparing task analysis...
+                  </p>
+                </div>
+              ) : !showTaskAnalysis ? (
+                <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[350px]">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mb-4 bg-white hover:bg-gray-50 shadow-sm border-gray-200 px-4"
+                    onClick={handleRevealTaskAnalysis}
                   >
-                    <AccordionTrigger 
-                      className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
+                    <Eye className="h-3.5 w-3.5 mr-2 text-primary" />
+                    Reveal Task Analysis and Sample
+                  </Button>
+                  <p className="text-gray-700 font-medium text-base mb-2 text-center">
+                    Click to explore detailed analysis and sample!
+                  </p>
+                  <p className="text-primary font-medium text-sm text-center">
+                    Build your understanding step by step.
+                  </p>
+                </div>
+              ) : (
+                <div
+                  className="overflow-y-auto custom-scrollbar"
+                  style={{ maxHeight: "430px" }}
+                >
+                  <Accordion
+                    type="single"
+                    collapsible
+                    className="w-full space-y-2"
+                  >
+                    {/* Accordion 1: Image Description */}
+                    <AccordionItem
+                      value="image-description"
+                      className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
                     >
-                      <span className="flex items-center gap-2">
-                        <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
-                          1
+                      <AccordionTrigger className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10">
+                        <span className="flex items-center gap-2">
+                          <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
+                            1
+                          </span>
+                          Image Description
                         </span>
-                        Image Description
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-3 bg-white">
-                      <div className="space-y-3">
-                          <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
-                            <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Chart Type:</span> {data?.analyze_question?.task1_analysis?.['1_image_description']?.chart_type}
-                            </p>
+                      </AccordionTrigger>
+                      <AccordionContent className="p-3 bg-white">
+                        {isLoading ? (
+                          <div className="space-y-3">
+                            <ShimmerCard className="border-blue-100" />
+                            <ShimmerCard className="border-blue-100" />
+                            <ShimmerCard className="border-blue-100" />
+                            <ShimmerCard className="border-blue-100" />
+                            <ShimmerCard className="border-blue-100" />
+                            <ShimmerCard className="border-blue-100" />
                           </div>
-                          
-                          <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
-                            <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Main Subject:</span> {data?.analyze_question?.task1_analysis?.['1_image_description']?.main_subject}
-                            </p>
-                          </div>
-                          
-                          <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
-                            <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Unit of Measurement:</span> {data?.analyze_question?.task1_analysis?.['1_image_description']?.unit_measurement}
-                            </p>
-                          </div>
-                          
-                          <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
-                            <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Time Period:</span>  {data?.analyze_question?.task1_analysis?.['1_image_description']?.time_period}
-                            </p>
-                          </div>
-                          
-                          <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
-                            <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Verb Tense Used:</span>  {data?.analyze_question?.task1_analysis?.['1_image_description']?.verb_tense}
-                            </p>
-                          </div>
-                          
-                          <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
-                            <p className="text-xs">
-                              <span className="text-[#1fb2aa] font-bold">Chart Summary:</span>  {data?.analyze_question?.task1_analysis?.['1_image_description']?.chart_summary}
-                            </p>
-                          </div>
-                        </div>
-                    </AccordionContent>
-                  </AccordionItem>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
+                              <p className="text-xs">
+                                <span className="text-[#1fb2aa] font-bold">
+                                  Chart Type:
+                                </span>{" "}
+                                {
+                                  data?.analyze_question?.task1_analysis?.[
+                                    "1_image_description"
+                                  ]?.chart_type
+                                }
+                              </p>
+                            </div>
 
-                  {/* Accordion 2: Analyze Question */}
-                  <AccordionItem 
-                    value="analyze-question"
-                    className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
-                  >
-                    <AccordionTrigger 
-                      className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
-                          2
-                        </span>
-                        Analyze Question
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-3 bg-white">
-                      {isLoading ? (
-                        <div className="space-y-3">
-                          <ShimmerCard className="border-gray-100" />
-                          <ShimmerCard className="border-gray-100" />
-                          <ShimmerCard className="border-gray-100" />
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Question Requirement:</p>
-                            <p className="text-xs text-[#374151]">
-                              {data?.analyze_question?.task1_analysis?.['2_analyse_question']?.question_requirement}                 
-                                </p>
+                            <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
+                              <p className="text-xs">
+                                <span className="text-[#1fb2aa] font-bold">
+                                  Main Subject:
+                                </span>{" "}
+                                {
+                                  data?.analyze_question?.task1_analysis?.[
+                                    "1_image_description"
+                                  ]?.main_subject
+                                }
+                              </p>
+                            </div>
+
+                            <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
+                              <p className="text-xs">
+                                <span className="text-[#1fb2aa] font-bold">
+                                  Unit of Measurement:
+                                </span>{" "}
+                                {
+                                  data?.analyze_question?.task1_analysis?.[
+                                    "1_image_description"
+                                  ]?.unit_measurement
+                                }
+                              </p>
+                            </div>
+
+                            <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
+                              <p className="text-xs">
+                                <span className="text-[#1fb2aa] font-bold">
+                                  Time Period:
+                                </span>{" "}
+                                {
+                                  data?.analyze_question?.task1_analysis?.[
+                                    "1_image_description"
+                                  ]?.time_period
+                                }
+                              </p>
+                            </div>
+
+                            <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
+                              <p className="text-xs">
+                                <span className="text-[#1fb2aa] font-bold">
+                                  Verb Tense Used:
+                                </span>{" "}
+                                {
+                                  data?.analyze_question?.task1_analysis?.[
+                                    "1_image_description"
+                                  ]?.verb_tense
+                                }
+                              </p>
+                            </div>
+
+                            <div className="p-3 rounded-md border border-blue-100 bg-[#f9fafb] text-[#374151]">
+                              <p className="text-xs">
+                                <span className="text-[#1fb2aa] font-bold">
+                                  Chart Summary:
+                                </span>{" "}
+                                {
+                                  data?.analyze_question?.task1_analysis?.[
+                                    "1_image_description"
+                                  ]?.chart_summary
+                                }
+                              </p>
+                            </div>
                           </div>
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Key Tasks:</p>
-                                <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                                {data?.analyze_question?.task1_analysis?.['2_analyse_question']?.key_tasks?.map((task, index) => (
-                                  <li key={index} className="flex items-start gap-2">
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Accordion 2: Question Analysis */}
+                    <AccordionItem
+                      value="analyze-question"
+                      className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+                    >
+                      <AccordionTrigger className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10">
+                        <span className="flex items-center gap-2">
+                          <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
+                            2
+                          </span>
+                          Question Analysis
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="p-3 bg-white">
+                        {isLoading ? (
+                          <div className="space-y-3">
+                            <ShimmerCard className="border-gray-100" />
+                            <ShimmerCard className="border-gray-100" />
+                            <ShimmerCard className="border-gray-100" />
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                              <p className="text-xs font-bold text-[#1fb2aa] mb-2">
+                                Question Requirement:
+                              </p>
+                              <p className="text-xs text-[#374151]">
+                                {
+                                  data?.analyze_question?.task1_analysis?.[
+                                    "2_analyse_question"
+                                  ]?.question_requirement
+                                }
+                              </p>
+                            </div>
+                            <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                              <p className="text-xs font-bold text-[#1fb2aa] mb-2">
+                                Key Tasks:
+                              </p>
+                              <ul className="text-xs text-[#374151] space-y-1 ml-3">
+                                {data?.analyze_question?.task1_analysis?.[
+                                  "2_analyse_question"
+                                ]?.key_tasks?.map((task, index) => (
+                                  <li
+                                    key={index}
+                                    className="flex items-start gap-2"
+                                  >
                                     <span className="text-xs mt-0.5">•</span>
                                     <span>{task}</span>
                                   </li>
-                                )) || (
+                                )) ||
                                   // Fallback loading skeleton if data is not available
                                   Array.from({ length: 3 }, (_, index) => (
-                                    <li key={index} className="flex items-start gap-2">
+                                    <li
+                                      key={index}
+                                      className="flex items-start gap-2"
+                                    >
                                       <span className="text-xs mt-0.5">•</span>
                                       <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
                                     </li>
-                                  ))
+                                  ))}
+                              </ul>
+                            </div>
+                            <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                              <p className="text-xs font-bold text-[#1fb2aa] mb-2">
+                                Band Guidance:
+                              </p>
+                              <p className="text-xs text-[#374151]">
+                                {
+                                  data?.analyze_question?.task1_analysis?.[
+                                    "2_analyse_question"
+                                  ]?.band_guidance
+                                }
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Accordion 3: Identify Main Features */}
+                    <AccordionItem
+                      value="identify-features"
+                      className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+                    >
+                      <AccordionTrigger className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10">
+                        <span className="flex items-center gap-2">
+                          <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
+                            3
+                          </span>
+                          Identify Main Features
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="p-3 bg-white">
+                        {isLoading ? (
+                          <div className="space-y-3">
+                            <ShimmerCard className="border-gray-100" />
+                            <ShimmerCard className="border-gray-100" />
+                            <ShimmerCard className="border-gray-100" />
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {/* Overall Trends Section */}
+                            <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                              <p className="text-xs font-bold text-[#1fb2aa] mb-2">
+                                Overall Trends:
+                              </p>
+                              <ul className="text-xs text-[#374151] space-y-1 ml-3">
+                                {data?.analyze_question?.task1_analysis?.[
+                                  "3_identify_main_features"
+                                ]?.overall_trends?.map((trend, index) => (
+                                  <li
+                                    key={index}
+                                    className="flex items-start gap-2"
+                                  >
+                                    <span className="text-xs mt-0.5">•</span>
+                                    <span>{trend}</span>
+                                  </li>
+                                )) || (
+                                  <li className="flex items-start gap-2">
+                                    <span className="text-xs mt-0.5">•</span>
+                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                                  </li>
                                 )}
-                                </ul>
+                              </ul>
+                            </div>
+
+                            {/* Key Data Points Section */}
+                            <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                              <p className="text-xs font-bold text-[#1fb2aa] mb-2">
+                                Key Data Points:
+                              </p>
+                              <ul className="text-xs text-[#374151] space-y-1 ml-3">
+                                {data?.analyze_question?.task1_analysis?.[
+                                  "3_identify_main_features"
+                                ]?.key_data_points?.map((point, index) => (
+                                  <li
+                                    key={index}
+                                    className="flex items-start gap-2"
+                                  >
+                                    <span className="text-xs mt-0.5">•</span>
+                                    <span>{point}</span>
+                                  </li>
+                                )) || (
+                                  <li className="flex items-start gap-2">
+                                    <span className="text-xs mt-0.5">•</span>
+                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+
+                            {/* Significant Changes Section */}
+                            <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
+                              <p className="text-xs font-bold text-[#1fb2aa] mb-2">
+                                Significant Changes:
+                              </p>
+                              <ul className="text-xs text-[#374151] space-y-1 ml-3">
+                                {data?.analyze_question?.task1_analysis?.[
+                                  "3_identify_main_features"
+                                ]?.significant_changes?.map((change, index) => (
+                                  <li
+                                    key={index}
+                                    className="flex items-start gap-2"
+                                  >
+                                    <span className="text-xs mt-0.5">•</span>
+                                    <span>{change}</span>
+                                  </li>
+                                )) || (
+                                  <li className="flex items-start gap-2">
+                                    <span className="text-xs mt-0.5">•</span>
+                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
                           </div>
-                          <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-                            <p className="text-xs font-bold text-[#1fb2aa] mb-2">Band Guidance:</p>
-                            <p className="text-xs text-[#374151]">
-                                {data?.analyze_question?.task1_analysis?.['2_analyse_question']?.band_guidance}                               
-                            </p>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Accordion 4: Jobs To Be Done */}
+                    <AccordionItem
+                      value="jobs-to-be-done"
+                      className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+                    >
+                      <AccordionTrigger className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10">
+                        <span className="flex items-center gap-2">
+                          <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
+                            4
+                          </span>
+                          Jobs To Be Done
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="p-3 bg-white">
+                        {isLoading ? (
+                          <div className="space-y-3">
+                            <ShimmerCard className="border-gray-100" />
+                            <ShimmerCard className="border-gray-100" />
+                            <ShimmerCard className="border-gray-100" />
                           </div>
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-
-                {/* Accordion 3: Identify Main Features */}
-<AccordionItem 
-  value="identify-features"
-  className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
->
-  <AccordionTrigger 
-    className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-  >
-    <span className="flex items-center gap-2">
-      <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
-        3
-      </span>
-      Identify Main Features
-    </span>
-  </AccordionTrigger>
-  <AccordionContent className="p-3 bg-white">
-    {isLoading ? (
-      <div className="space-y-3">
-        <ShimmerCard className="border-gray-100" />
-        <ShimmerCard className="border-gray-100" />
-        <ShimmerCard className="border-gray-100" />
-      </div>
-    ) : (
-      <div className="space-y-3">
-        {/* Overall Trends Section */}
-        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-          <p className="text-xs font-bold text-[#1fb2aa] mb-2">Overall Trends:</p>
-          <ul className="text-xs text-[#374151] space-y-1 ml-3">
-            {data?.analyze_question?.task1_analysis?.['3_identify_main_features']?.overall_trends?.map((trend, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-xs mt-0.5">•</span>
-                <span>{trend}</span>
-              </li>
-            )) || (
-              <li className="flex items-start gap-2">
-                <span className="text-xs mt-0.5">•</span>
-                <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-              </li>
-            )}
-          </ul>
-        </div>
-
-        {/* Key Data Points Section */}
-        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-          <p className="text-xs font-bold text-[#1fb2aa] mb-2">Key Data Points:</p>
-          <ul className="text-xs text-[#374151] space-y-1 ml-3">
-            {data?.analyze_question?.task1_analysis?.['3_identify_main_features']?.key_data_points?.map((point, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-xs mt-0.5">•</span>
-                <span>{point}</span>
-              </li>
-            )) || (
-              <li className="flex items-start gap-2">
-                <span className="text-xs mt-0.5">•</span>
-                <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-              </li>
-            )}
-          </ul>
-        </div>
-
-        {/* Significant Changes Section */}
-        <div className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-          <p className="text-xs font-bold text-[#1fb2aa] mb-2">Significant Changes:</p>
-          <ul className="text-xs text-[#374151] space-y-1 ml-3">
-            {data?.analyze_question?.task1_analysis?.['3_identify_main_features']?.significant_changes?.map((change, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-xs mt-0.5">•</span>
-                <span>{change}</span>
-              </li>
-            )) || (
-              <li className="flex items-start gap-2">
-                <span className="text-xs mt-0.5">•</span>
-                <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-              </li>
-            )}
-          </ul>
-        </div>
-      </div>
-    )}
-  </AccordionContent>
-</AccordionItem>
-
-{/* Accordion 4: Jobs To Be Done */}
-<AccordionItem
-  value="jobs-to-be-done"
-  className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
->
-  <AccordionTrigger
-    className="text-sm font-medium py-3 px-4 hover:no-underline bg-gradient-to-r from-primary/5 to-transparent hover:from-primary/10"
-  >
-    <span className="flex items-center gap-2">
-      <span className="flex justify-center items-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs">
-        4
-      </span>
-      Jobs To Be Done
-    </span>
-  </AccordionTrigger>
-  <AccordionContent className="p-3 bg-white">
-    {isLoading ? (
-      <div className="space-y-3">
-        <ShimmerCard className="border-gray-100" />
-        <ShimmerCard className="border-gray-100" />
-        <ShimmerCard className="border-gray-100" />
-      </div>
-    ) : (
-      <div className="space-y-3">
-        {data?.analyze_question?.task1_analysis?.['4_jobs_to_done']?.map((job, index) => (
-          <div key={index} className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-            <p className="text-xs font-bold text-[#1fb2aa] mb-2">
-              {job.split(':')[0]}:
-            </p>
-            <p className="text-xs text-[#374151]">
-              {job.split(':').slice(1).join(':').trim()}
-            </p>
-          </div>
-        )) || (
-          // Fallback skeleton if no data
-          Array.from({ length: 3 }, (_, index) => (
-            <div key={index} className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]">
-              <div className="h-3 bg-gray-200 rounded animate-pulse w-16 mb-2"></div>
-              <div className="space-y-1">
-                <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
-                <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    )}
-  </AccordionContent>
-</AccordionItem>
-                </Accordion>
-              </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {data?.analyze_question?.task1_analysis?.[
+                              "4_jobs_to_done"
+                            ]?.map((job, index) => (
+                              <div
+                                key={index}
+                                className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]"
+                              >
+                                <p className="text-xs font-bold text-[#1fb2aa] mb-2">
+                                  {job.split(":")[0]}:
+                                </p>
+                                <p className="text-xs text-[#374151]">
+                                  {job.split(":").slice(1).join(":").trim()}
+                                </p>
+                              </div>
+                            )) ||
+                              // Fallback skeleton if no data
+                              Array.from({ length: 3 }, (_, index) => (
+                                <div
+                                  key={index}
+                                  className="p-3 rounded-md border border-gray-100 bg-[#f9fafb]"
+                                >
+                                  <div className="h-3 bg-gray-200 rounded animate-pulse w-16 mb-2"></div>
+                                  <div className="space-y-1">
+                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
@@ -567,8 +727,12 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
           >
             <Eye className="h-3.5 w-3.5 mr-2 text-primary" /> Show Support
           </Button>
-          <p className="text-gray-700 font-medium text-base mb-2 text-center">Hãy cố gắng hết mình nhé!</p>
-          <p className="text-primary font-medium text-sm text-center">Good things take time. 😉</p>
+          <p className="text-gray-700 font-medium text-base mb-2 text-center">
+            Hãy cố gắng hết mình nhé!
+          </p>
+          <p className="text-primary font-medium text-sm text-center">
+            Good things take time. 😉
+          </p>
         </div>
       )}
     </div>
@@ -579,8 +743,8 @@ function Task1OutlineSection({ questionType, question }: { questionType: string,
 // Interface for Task1VocabularyWord
 interface Task1VocabularyWord {
   word: string;
-  partOfSpeech: 'N' | 'V' | 'Adj' | 'Adv' | 'Phrase' | 'Collocation';
-  difficulty: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+  partOfSpeech: "N" | "V" | "Adj" | "Adv" | "Phrase" | "Collocation";
+  difficulty: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   meaning: string;
   chartFunction: string;
   example: string;
@@ -636,14 +800,16 @@ interface SessionStorageData {
 }
 
 function Task1ResourcesSection({ questionType }: { questionType: string }) {
-  const [activeTab, setActiveTab] = useState('vocabulary');
+  const [activeTab, setActiveTab] = useState("vocabulary");
   const [showWordBank, setShowWordBank] = useState(false);
   const [vocabDisplayCount, setVocabDisplayCount] = useState(10);
   const [phraseDisplayCount, setPhraseDisplayCount] = useState(8);
   const [isLoadingVocab, setIsLoadingVocab] = useState(false);
   const [isLoadingPhrases, setIsLoadingPhrases] = useState(false);
   const [isLoadingWordBank, setIsLoadingWordBank] = useState(false);
-  const [vocabularyWords, setVocabularyWords] = useState<Task1VocabularyWord[]>([]);
+  const [vocabularyWords, setVocabularyWords] = useState<Task1VocabularyWord[]>(
+    []
+  );
   const [phraseWords, setPhraseWords] = useState<Task1VocabularyWord[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -653,9 +819,9 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
       setIsLoadingWordBank(true);
       try {
         // Retrieve and parse session storage data
-        const sessionDataRaw = sessionStorage.getItem('task1WritingConfig'); // Adjust key as needed
+        const sessionDataRaw = sessionStorage.getItem("task1WritingConfig"); // Adjust key as needed
         if (!sessionDataRaw) {
-          throw new Error('No task data found in session storage');
+          throw new Error("No task data found in session storage");
         }
 
         const sessionData: SessionStorageData = JSON.parse(sessionDataRaw);
@@ -663,57 +829,82 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
 
         // Validate required fields
         if (!question || !bandLevel || !apiImageUrl) {
-          throw new Error('Missing required data (question, bandLevel, or apiImageUrl) in session storage');
+          throw new Error(
+            "Missing required data (question, bandLevel, or apiImageUrl) in session storage"
+          );
         }
 
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/generate-vocabulary-task1`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            question,
-            url: apiImageUrl,
-            level: `Band ${bandLevel}`,
-          }),
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/generate-vocabulary-task1`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              question,
+              url: apiImageUrl,
+              level: `Band ${bandLevel}`,
+            }),
+          }
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch vocabulary data');
+          throw new Error("Failed to fetch vocabulary data");
         }
 
         const data: ApiResponse = await response.json();
         if (data.success && data.data.success) {
           // Map chart-specific vocabulary
-          const vocab: Task1VocabularyWord[] = data.data.data.chart_specific_vocabulary.map((item) => ({
-            word: item.word,
-            partOfSpeech: item.type as 'N' | 'V' | 'Adj' | 'Adv' | 'Phrase' | 'Collocation',
-            difficulty: item.cefr_level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
-            meaning: item.meaning,
-            chartFunction: item.chart_function,
-            example: item.example,
-            type: 'neutral',
-          }));
+          const vocab: Task1VocabularyWord[] =
+            data.data.data.chart_specific_vocabulary.map((item) => ({
+              word: item.word,
+              partOfSpeech: item.type as
+                | "N"
+                | "V"
+                | "Adj"
+                | "Adv"
+                | "Phrase"
+                | "Collocation",
+              difficulty: item.cefr_level as
+                | "A1"
+                | "A2"
+                | "B1"
+                | "B2"
+                | "C1"
+                | "C2",
+              meaning: item.meaning,
+              chartFunction: item.chart_function,
+              example: item.example,
+              type: "neutral",
+            }));
 
           // Map trend collocations
-          const phrases: Task1VocabularyWord[] = data.data.data.trend_collocations.map((item) => ({
-            word: item.phrase,
-            partOfSpeech: 'Collocation',
-            difficulty: item.cefr_level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
-            meaning: item.meaning,
-            chartFunction: item.chart_function,
-            example: item.example,
-            type: 'neutral',
-          }));
+          const phrases: Task1VocabularyWord[] =
+            data.data.data.trend_collocations.map((item) => ({
+              word: item.phrase,
+              partOfSpeech: "Collocation",
+              difficulty: item.cefr_level as
+                | "A1"
+                | "A2"
+                | "B1"
+                | "B2"
+                | "C1"
+                | "C2",
+              meaning: item.meaning,
+              chartFunction: item.chart_function,
+              example: item.example,
+              type: "neutral",
+            }));
 
           setVocabularyWords(vocab);
           setPhraseWords(phrases);
         } else {
-          throw new Error(data.message || 'API returned an error');
+          throw new Error(data.message || "API returned an error");
         }
       } catch (err) {
-        setError('Error fetching vocabulary data. Please try again later.');
+        setError("Error fetching vocabulary data. Please try again later.");
         console.error(err);
       } finally {
         setIsLoadingWordBank(false);
@@ -812,7 +1003,9 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
         <TabsContent value="vocabulary" className="p-0 min-h-[200px]">
           {error ? (
             <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
-              <p className="text-red-600 font-medium text-base text-center">{error}</p>
+              <p className="text-red-600 font-medium text-base text-center">
+                {error}
+              </p>
             </div>
           ) : isLoadingWordBank ? (
             <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
@@ -847,7 +1040,9 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
                       className="p-2.5 rounded-lg border border-primary/30 bg-primary/5 shadow-sm hover:shadow-md transition-shadow"
                     >
                       <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                        <span className="font-semibold text-sm text-primary">{word.word}</span>
+                        <span className="font-semibold text-sm text-primary">
+                          {word.word}
+                        </span>
                         <div className="text-xs font-medium px-1.5 py-0.5 bg-teal-100 text-teal-700 rounded-full">
                           {word.partOfSpeech}
                         </div>
@@ -856,13 +1051,16 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
                         </div>
                       </div>
                       <p className="text-xs text-gray-700 mb-1">
-                        <span className="font-medium">Meaning:</span> {word.meaning}
+                        <span className="font-medium">Meaning:</span>{" "}
+                        {word.meaning}
                       </p>
-                      <p className="text-xs mb-1" style={{ color: '#374151' }}>
-                        <span className="font-medium">Chart Function:</span> {word.chartFunction}
+                      <p className="text-xs mb-1" style={{ color: "#374151" }}>
+                        <span className="font-medium">Chart Function:</span>{" "}
+                        {word.chartFunction}
                       </p>
                       <p className="text-xs text-gray-600 italic border-t border-gray-200 pt-1 mt-1">
-                        <span className="font-medium not-italic">Example:</span> {word.example}
+                        <span className="font-medium not-italic">Example:</span>{" "}
+                        {word.example}
                       </p>
                     </div>
                   ))}
@@ -931,7 +1129,9 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
         <TabsContent value="phrases" className="p-0 min-h-[200px]">
           {error ? (
             <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
-              <p className="text-red-600 font-medium text-base text-center">{error}</p>
+              <p className="text-red-600 font-medium text-base text-center">
+                {error}
+              </p>
             </div>
           ) : isLoadingWordBank ? (
             <div className="flex flex-col justify-center items-center h-full w-full bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-lg p-8 shadow-sm min-h-[200px]">
@@ -946,7 +1146,9 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
                     className="p-2.5 rounded-lg border border-primary/30 bg-primary/5 shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                      <span className="font-semibold text-sm text-primary">{phrase.word}</span>
+                      <span className="font-semibold text-sm text-primary">
+                        {phrase.word}
+                      </span>
                       <div className="text-xs font-medium px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">
                         Collocation
                       </div>
@@ -955,17 +1157,22 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
                       </div>
                     </div>
                     <p className="text-xs text-gray-700 mb-1">
-                      <span className="font-medium">Meaning:</span> {phrase.meaning}
+                      <span className="font-medium">Meaning:</span>{" "}
+                      {phrase.meaning}
                     </p>
-                    <p className="text-xs mb-1" style={{ color: '#374151' }}>
-                      <span className="font-medium">Chart Function:</span> {phrase.chartFunction}
+                    <p className="text-xs mb-1" style={{ color: "#374151" }}>
+                      <span className="font-medium">Chart Function:</span>{" "}
+                      {phrase.chartFunction}
                     </p>
                     <p className="text-xs text-gray-600 italic border-t border-gray-200 pt-1 mt-1">
-                      <span className="font-medium not-italic">Example:</span> {phrase.example}
+                      <span className="font-medium not-italic">Example:</span>{" "}
+                      {phrase.example}
                     </p>
                   </div>
                 ))}
-                {displayedPhraseWords.length % 2 !== 0 && <div className="hidden md:block" />}
+                {displayedPhraseWords.length % 2 !== 0 && (
+                  <div className="hidden md:block" />
+                )}
               </div>
               {hasMorePhrases && (
                 <div className="flex justify-center mt-4 mb-2">
@@ -1031,9 +1238,12 @@ function Task1ResourcesSection({ questionType }: { questionType: string }) {
   );
 }
 
-
-
-export default function Task1WritingInterface({ question, questionType, bandLevel, timeLimit }: Task1WritingInterfaceProps) {
+export default function Task1WritingInterface({
+  question,
+  questionType,
+  bandLevel,
+  timeLimit,
+}: Task1WritingInterfaceProps) {
   const [essayContent, setEssayContent] = useState("");
   const [wordCount, setWordCount] = useState(0);
   const [isWordCountValid, setIsWordCountValid] = useState(true);
@@ -1047,12 +1257,16 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
 
   useEffect(() => {
     // Retrieve config from sessionStorage
-    const config = sessionStorage.getItem('task1WritingConfig');
+    const config = sessionStorage.getItem("task1WritingConfig");
     if (config) {
       try {
         const parsedConfig = JSON.parse(config);
         if (parsedConfig.question) {
-          setQuestion(parsedConfig.question.replace(/^\*\*IELTS Writing Task 1:\*\*\s*/, '').trim());
+          setQuestion(
+            parsedConfig.question
+              .replace(/^\*\*IELTS Writing Task 1:\*\*\s*/, "")
+              .trim()
+          );
         }
         if (parsedConfig.apiImageUrl) {
           setImageUrl(parsedConfig.apiImageUrl);
@@ -1060,7 +1274,7 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
         // Note: uploadedImage is a File object and cannot be stored directly in sessionStorage.
         // If you need to handle uploadedImage, it would require a different approach (e.g., storing as a data URL).
       } catch (error) {
-        console.error('Error parsing sessionStorage config:', error);
+        console.error("Error parsing sessionStorage config:", error);
       }
     }
   }, []);
@@ -1094,12 +1308,11 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
       setShowErrorDialog(true);
       return;
     }
-    sessionStorage.setItem('task1EssayContent', essayContent);
+    sessionStorage.setItem("task1EssayContent", essayContent);
     setShowLoadingPage(true);
   };
 
   const handleLoadingComplete = () => {
-
     // First hide the loading page
     setShowLoadingPage(false);
     // Then show feedback after a brief delay to ensure state update
@@ -1110,9 +1323,9 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
 
   const handleSaveDraft = () => {
     // Save to localStorage
-    localStorage.setItem('task1EssayDraft', essayContent);
-    localStorage.setItem('task1Question', question);
-    alert('Task 1 draft saved successfully');
+    localStorage.setItem("task1EssayDraft", essayContent);
+    localStorage.setItem("task1Question", question);
+    alert("Task 1 draft saved successfully");
   };
 
   // Show feedback interface after submission
@@ -1132,8 +1345,8 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
   return (
     <div className="p-4">
       <div className="flex mb-2">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           className="h-7 text-xs"
           onClick={() => setShowExitDialog(true)}
@@ -1145,18 +1358,23 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
       <div className="flex flex-col lg:flex-row lg:space-x-4">
         <div className="lg:w-3/5">
           <div className="bg-gradient-to-r from-cyan-50 to-teal-50 rounded-lg p-6 mb-4 border-2 border-cyan-300 shadow-sm">
-            <div className="text-teal-800 font-bold text-sm mb-3">IELTS Writing Task 1:</div>
-            <div className="text-gray-800 text-sm leading-relaxed">{questionTest || "No question available. Please generate or select a question."}</div>
+            <div className="text-teal-800 font-bold text-sm mb-3">
+              IELTS Writing Task 1:
+            </div>
+            <div className="text-gray-800 text-sm leading-relaxed">
+              {questionTest ||
+                "No question available. Please generate or select a question."}
+            </div>
           </div>
 
-  {imageUrl ? (
+          {imageUrl ? (
             <div className="bg-white rounded-md p-4 mb-3 border-2 border-gray-200 shadow-sm">
               <img
                 src={imageUrl}
                 alt="Task 1 Visual"
                 className="w-full max-h-[400px] object-contain rounded-md"
                 onError={() => {
-                  console.error('Failed to load image');
+                  console.error("Failed to load image");
                 }}
               />
             </div>
@@ -1166,8 +1384,8 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
             </div>
           )}
           <div className="flex items-center justify-between mb-2 h-8">
-            <Timer 
-              time={formattedTime()} 
+            <Timer
+              time={formattedTime()}
               onTimeSelect={handleTimeSelect}
               isRunning={isRunning}
             />
@@ -1198,25 +1416,23 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
           </div>
         </div>
 
-        <div className="hidden lg:block lg:w-2/5 lg:pl-3 lg:flex lg:flex-col" style={{ minHeight: '500px' }}>
-          <Task1OutlineSection 
-            questionType={questionType} 
-            question={question} 
+        <div
+          className="hidden lg:block lg:w-2/5 lg:pl-3 lg:flex lg:flex-col"
+          style={{ minHeight: "500px" }}
+        >
+          <Task1OutlineSection
+            questionType={questionType}
+            question={question}
           />
         </div>
       </div>
 
       <div className="mt-4 lg:hidden">
-        <Task1OutlineSection 
-          questionType={questionType} 
-          question={question} 
-        />
+        <Task1OutlineSection questionType={questionType} question={question} />
       </div>
 
       {/* Resources Section Below */}
-      <Task1ResourcesSection 
-        questionType={questionType} 
-      />
+      <Task1ResourcesSection questionType={questionType} />
 
       {/* Exit Confirmation Dialog */}
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
@@ -1224,15 +1440,14 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
           <AlertDialogHeader>
             <AlertDialogTitle>Exit Task 1 Practice?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to exit the Task 1 writing practice? Your progress will not be saved.
+              Are you sure you want to exit the Task 1 writing practice? Your
+              progress will not be saved.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continue Writing</AlertDialogCancel>
             <Link href="/writing-task-1">
-              <AlertDialogAction>
-                Exit
-              </AlertDialogAction>
+              <AlertDialogAction>Exit</AlertDialogAction>
             </Link>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1244,15 +1459,18 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
           <AlertDialogHeader>
             <AlertDialogTitle>Time's Up!</AlertDialogTitle>
             <AlertDialogDescription>
-              Your allocated time for this Task 1 essay has ended. Would you like to submit your work now or continue writing?
+              Your allocated time for this Task 1 essay has ended. Would you
+              like to submit your work now or continue writing?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continue Writing</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              setShowTimeUpDialog(false);
-              handleSubmit();
-            }}>
+            <AlertDialogAction
+              onClick={() => {
+                setShowTimeUpDialog(false);
+                handleSubmit();
+              }}
+            >
               Submit Now
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -1265,7 +1483,8 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
           <AlertDialogHeader>
             <AlertDialogTitle>Word Count Warning</AlertDialogTitle>
             <AlertDialogDescription>
-              Your response must be at least 50 words. Please add more content before submitting for feedback.
+              Your response must be at least 50 words. Please add more content
+              before submitting for feedback.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1277,7 +1496,7 @@ export default function Task1WritingInterface({ question, questionType, bandLeve
       </AlertDialog>
 
       {/* Interactive Loading Page */}
-      <InteractiveLoadingPage 
+      <InteractiveLoadingPage
         isVisible={showLoadingPage}
         onComplete={handleLoadingComplete}
       />

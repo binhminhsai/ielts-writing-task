@@ -1,20 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface ChemicalFlaskLoaderProps {
   isVisible: boolean;
   onComplete: () => void;
 }
 
-export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoaderProps) {
+export function ChemicalFlaskLoader({
+  isVisible,
+  onComplete,
+}: ChemicalFlaskLoaderProps) {
   const [liquidLevel, setLiquidLevel] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
 
   const messages = [
-    "Almost there! We're finalizing your question...",
+    "Preparing detailed insights for you...",
     "Analyzing your writing level...",
     "Generating a personalized Task 1 prompt...",
-    "Calibrating chart details and band level..."
+    "Calibrating chart details and band level...",
   ];
 
   useEffect(() => {
@@ -27,7 +30,7 @@ export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoad
 
     // Start the liquid filling animation immediately
     const liquidTimer = setInterval(() => {
-      setLiquidLevel(prev => {
+      setLiquidLevel((prev) => {
         if (prev >= 100) {
           clearInterval(liquidTimer);
           return 100;
@@ -38,7 +41,7 @@ export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoad
 
     // Change messages every 2 seconds
     const messageTimer = setInterval(() => {
-      setMessageIndex(prev => (prev + 1) % messages.length);
+      setMessageIndex((prev) => (prev + 1) % messages.length);
     }, 2000);
 
     // Complete animation after 5 seconds
@@ -59,9 +62,11 @@ export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoad
   if (!isVisible) return null;
 
   return (
-    <div className={`flex flex-col items-center py-4 my-6 transition-all duration-500 ${
-      isCompleting ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
-    }`}>
+    <div
+      className={`flex flex-col items-center py-4 my-6 transition-all duration-500 ${
+        isCompleting ? "scale-95 opacity-0" : "scale-100 opacity-100"
+      }`}
+    >
       {/* Chemical Flask SVG */}
       <div className="relative mb-4">
         <svg
@@ -75,22 +80,28 @@ export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoad
           {/* Flask Outline with Glow */}
           <defs>
             <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge> 
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
+              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <linearGradient id="liquidGradient" x1="0%" y1="100%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="#1fb2aa" stopOpacity="0.9"/>
-              <stop offset="50%" stopColor="#1fb2aa" stopOpacity="0.7"/>
-              <stop offset="100%" stopColor="#1fb2aa" stopOpacity="0.5"/>
+            <linearGradient
+              id="liquidGradient"
+              x1="0%"
+              y1="100%"
+              x2="0%"
+              y2="0%"
+            >
+              <stop offset="0%" stopColor="#1fb2aa" stopOpacity="0.9" />
+              <stop offset="50%" stopColor="#1fb2aa" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#1fb2aa" stopOpacity="0.5" />
             </linearGradient>
             <clipPath id="flaskClip">
-              <path d="M45 20 L45 45 L20 100 L20 120 L100 120 L100 100 L75 45 L75 20 Z"/>
+              <path d="M45 20 L45 45 L20 100 L20 120 L100 120 L100 100 L75 45 L75 20 Z" />
             </clipPath>
           </defs>
-          
+
           {/* Flask Body */}
           <path
             d="M45 20 L45 45 L20 100 L20 120 L100 120 L100 100 L75 45 L75 20 Z"
@@ -99,7 +110,7 @@ export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoad
             strokeWidth="2"
             filter="url(#glow)"
           />
-          
+
           {/* Flask Neck */}
           <rect
             x="50"
@@ -111,14 +122,14 @@ export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoad
             strokeWidth="2"
             filter="url(#glow)"
           />
-          
+
           {/* Liquid with wave animation */}
           <g clipPath="url(#flaskClip)">
             <path
-              d={`M20 ${120 - (liquidLevel * 0.8)} 
-                 Q35 ${118 - (liquidLevel * 0.8)} 50 ${120 - (liquidLevel * 0.8)}
-                 T80 ${118 - (liquidLevel * 0.8)}
-                 Q90 ${120 - (liquidLevel * 0.8)} 100 ${120 - (liquidLevel * 0.8)}
+              d={`M20 ${120 - liquidLevel * 0.8} 
+                 Q35 ${118 - liquidLevel * 0.8} 50 ${120 - liquidLevel * 0.8}
+                 T80 ${118 - liquidLevel * 0.8}
+                 Q90 ${120 - liquidLevel * 0.8} 100 ${120 - liquidLevel * 0.8}
                  L100 120 L20 120 Z`}
               fill="url(#liquidGradient)"
               className="animate-pulse"
@@ -132,20 +143,22 @@ export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoad
                 repeatCount="indefinite"
               />
             </path>
-            
+
             {/* Floating bubbles */}
             {liquidLevel > 20 && (
               <>
                 <circle
                   cx="40"
-                  cy={115 - (liquidLevel * 0.6)}
+                  cy={115 - liquidLevel * 0.6}
                   r="2"
                   fill="#ffffff"
                   opacity="0.6"
                 >
                   <animate
                     attributeName="cy"
-                    values={`${115 - (liquidLevel * 0.6)};${105 - (liquidLevel * 0.6)};${115 - (liquidLevel * 0.6)}`}
+                    values={`${115 - liquidLevel * 0.6};${
+                      105 - liquidLevel * 0.6
+                    };${115 - liquidLevel * 0.6}`}
                     dur="2s"
                     repeatCount="indefinite"
                   />
@@ -158,14 +171,16 @@ export function ChemicalFlaskLoader({ isVisible, onComplete }: ChemicalFlaskLoad
                 </circle>
                 <circle
                   cx="70"
-                  cy={110 - (liquidLevel * 0.6)}
+                  cy={110 - liquidLevel * 0.6}
                   r="1.5"
                   fill="#ffffff"
                   opacity="0.4"
                 >
                   <animate
                     attributeName="cy"
-                    values={`${110 - (liquidLevel * 0.6)};${100 - (liquidLevel * 0.6)};${110 - (liquidLevel * 0.6)}`}
+                    values={`${110 - liquidLevel * 0.6};${
+                      100 - liquidLevel * 0.6
+                    };${110 - liquidLevel * 0.6}`}
                     dur="2.5s"
                     repeatCount="indefinite"
                   />
