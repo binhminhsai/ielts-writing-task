@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Ielts_System")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ee5fdcf976876b00771fc7f5dd4993ed249c0f6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e96212eeae74877dba638ee9c930de005cc3d2bc")]
 [assembly: System.Reflection.AssemblyProductAttribute("Ielts_System")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Ielts_System")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

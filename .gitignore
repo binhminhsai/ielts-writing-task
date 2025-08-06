@@ -8,17 +8,16 @@ vite.config.ts.*
 .vs/
 node_modules/
 # Ignore server object files
-SWD392.Server/obj/
+
 SWD392.Server/bin/
-/BO/obj
+/BusinessObject/obj
 /DAL/obj
-/Repo/obj
-/Services/obj
-/Services/obj
-/BO/bin
+/Repository/obj
+/Service/obj
+/Ielts_System/obj
+/Ielts_System/bin
+/BusinessObject/bin
 /DAL/bin
-/Repo/bin
-/Services/bin
-/swd392.client/obj
-/SWD392.Server/wwwroot
+/Repository/bin
+/Service/bin
 DAL/Migrations/20250620050600_FixApplication.cs

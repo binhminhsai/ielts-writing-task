@@ -108,6 +108,10 @@ namespace Ielts_System
                     }
                 });
             });
+            builder.Services.AddOpenApi("v1", options =>
+            {
+                options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+            });
 
             var app = builder.Build();
 

@@ -8,21 +8,98 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Lock, Mail, UserPlus, Eye, EyeOff } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { User, Lock, Mail, UserPlus, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import { useAuth } from "@/components/contexts/AuthContext";
 
 export default function Register() {
+  const { register } = useAuth();
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    general: "",
+  });
 
-  const handleCreateAccount = () => {
-    // Handle registration logic here
-    console.log("Creating account...");
-    // On successful registration, navigate to verification page
-    setLocation("/verify-email");
+  const validateForm = () => {
+    const newErrors = {
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      general: "",
+    };
+
+    if (!formData.username.trim()) {
+      newErrors.username = "Please enter your full name";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Please enter your email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Please enter a password";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords don't match";
+    }
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error);
+  };
+
+  const handleCreateAccount = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    setErrors(prev => ({ ...prev, general: "" }));
+
+    try {
+      const success = await register(
+        formData.username,
+        formData.email,
+        formData.password
+      );
+
+      if (success) {
+        setLocation("/verify-email");
+      }
+    } catch (error) {
+      setErrors(prev => ({ 
+        ...prev, 
+        general: "Registration failed. Please try again." 
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
+    }
   };
 
   return (
@@ -38,18 +115,33 @@ export default function Register() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {errors.general && (
+              <p className="text-red-500 text-sm flex items-center gap-1">
+                <AlertCircle size={14} />
+                {errors.general}
+              </p>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="flex items-center gap-2">
+              <Label htmlFor="username" className="flex items-center gap-2">
                 <User size={16} />
                 Full Name
               </Label>
               <Input
-                id="fullName"
+                id="username"
                 type="text"
                 placeholder="Enter your full name"
-                className="border-teal-200 focus:border-teal-500"
+                value={formData.username}
+                onChange={(e) => handleInputChange("username", e.target.value)}
+                className={`border-teal-200 focus:border-teal-500 ${
+                  errors.username ? "border-red-500 focus:border-red-500" : ""
+                }`}
               />
+              {errors.username && (
+                <p className="text-red-500 text-sm">{errors.username}</p>
+              )}
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="email" className="flex items-center gap-2">
                 <Mail size={16} />
@@ -59,9 +151,17 @@ export default function Register() {
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                className="border-teal-200 focus:border-teal-500"
+                value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                className={`border-teal-200 focus:border-teal-500 ${
+                  errors.email ? "border-red-500 focus:border-red-500" : ""
+                }`}
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center gap-2">
                 <Lock size={16} />
@@ -72,7 +172,11 @@ export default function Register() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a password"
-                  className="border-teal-200 focus:border-teal-500 pr-10"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  className={`border-teal-200 focus:border-teal-500 pr-10 ${
+                    errors.password ? "border-red-500 focus:border-red-500" : ""
+                  }`}
                 />
                 <button
                   type="button"
@@ -82,12 +186,13 @@ export default function Register() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm">{errors.password}</p>
+              )}
             </div>
+
             <div className="space-y-2">
-              <Label
-                htmlFor="confirmPassword"
-                className="flex items-center gap-2"
-              >
+              <Label htmlFor="confirmPassword" className="flex items-center gap-2">
                 <Lock size={16} />
                 Confirm Password
               </Label>
@@ -96,29 +201,42 @@ export default function Register() {
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
-                  className="border-teal-200 focus:border-teal-500 pr-10"
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                  className={`border-teal-200 focus:border-teal-500 pr-10 ${
+                    errors.confirmPassword ? "border-red-500 focus:border-red-500" : ""
+                  }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+              )}
             </div>
+
             <Button
               onClick={handleCreateAccount}
               className="w-full bg-teal-600 hover:bg-teal-700 flex items-center gap-2"
+              disabled={isSubmitting}
             >
-              <UserPlus size={16} />
-              Create Account
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                <>
+                  <UserPlus size={16} />
+                  Create Account
+                </>
+              )}
             </Button>
-
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />

@@ -63,7 +63,7 @@ export default function VerifyEmail() {
 
         // Show success for 1 second then redirect
         setTimeout(() => {
-          setLocation("/");
+          setLocation("/login");
         }, 1000);
       } else {
         // Error case
