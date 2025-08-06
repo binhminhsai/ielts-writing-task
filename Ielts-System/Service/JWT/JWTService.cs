@@ -36,7 +36,7 @@ namespace Service.JWT
             // Add CreatedAt claim only if it has value
             if (user.CreatedAt.HasValue)
             {
-                claims.Add(new Claim("CreatedAt", user.CreatedAt.Value.ToString("o"))); // ISO 8601 format
+                claims.Add(new Claim("CreateAt", user.CreatedAt.Value.ToString("o"))); // ISO 8601 format
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor

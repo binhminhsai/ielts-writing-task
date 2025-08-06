@@ -319,7 +319,7 @@ export default function MyAccount() {
                         Ngày tham gia
                       </Label>
                       <div className="bg-white border border-gray-200 rounded-lg p-4 text-gray-900 font-medium">
-                        {user.createAt}
+                        {new Date(user.createAt).toLocaleDateString('vi-VN')}
                       </div>
                     </div>
 

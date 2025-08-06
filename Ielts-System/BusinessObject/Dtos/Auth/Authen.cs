@@ -14,7 +14,7 @@ namespace BusinessObject.Dtos.Auth
     public class RegisterDto
     {
         [Required]
-        [StringLength(50, MinimumLength = 3)]
+        [StringLength(100, MinimumLength = 5)]
         public string Username { get; set; }
 
         [Required]
@@ -22,7 +22,7 @@ namespace BusinessObject.Dtos.Auth
         public string Email { get; set; }
 
         [Required]
-        [StringLength(100, MinimumLength = 6)]
+        [StringLength(50, MinimumLength = 8)]
         public string Password { get; set; }
          
     }

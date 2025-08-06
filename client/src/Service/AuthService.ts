@@ -15,7 +15,7 @@ interface ProfileResponse {
   username: string;
   email: string;
   role: string;
-  createdAt: string;
+ createdAt: string;
 }
 
 interface ErrorResponse {
