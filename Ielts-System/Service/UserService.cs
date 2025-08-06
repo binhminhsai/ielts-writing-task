@@ -46,7 +46,8 @@ namespace Service
                 Username = registerDto.Username,
                 Email = registerDto.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
-                Role = "User" // Default role
+                Role = "User", // Default role
+                CreatedAt = DateTime.UtcNow,
             };
            await _userRepository.CreateAsync(user);
             return "Registration successful. Please log in.";

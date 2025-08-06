@@ -13,6 +13,7 @@ interface User {
   name: string;
   userId?: string;
   role?: string;
+  createAt?: string;
 }
 
 interface AuthContextType {
@@ -53,7 +54,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             email: profile.email,
             name: profile.username,
             userId: profile.userId,
-            role: profile.role
+            role: profile.role,
+            createAt: profile.createdAt
           });
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
@@ -80,7 +82,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         email: profile.email,
         name: profile.username,
         userId: profile.userId,
-        role: profile.role
+        role: profile.role,
+        createAt: profile.createdAt
       });
       
       return true;

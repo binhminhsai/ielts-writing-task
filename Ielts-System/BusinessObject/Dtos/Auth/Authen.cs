@@ -24,6 +24,7 @@ namespace BusinessObject.Dtos.Auth
         [Required]
         [StringLength(100, MinimumLength = 6)]
         public string Password { get; set; }
+         
     }
     public class LoginDto
     {

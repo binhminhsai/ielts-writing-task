@@ -83,7 +83,8 @@ namespace Ielts_System.Controllers
                     userId = userId,
                     username = User.FindFirst(ClaimTypes.Name)?.Value, 
                     email = User.FindFirst(ClaimTypes.Email)?.Value,   
-                    role = User.FindFirst(ClaimTypes.Role)?.Value
+                    role = User.FindFirst(ClaimTypes.Role)?.Value,
+                    createdAt = User.FindFirst("CreateAt")?.Value
                 });
             }
             catch (Exception ex)

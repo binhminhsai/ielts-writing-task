@@ -38,3 +38,5 @@ DAL/Migrations/20250620050600_FixApplication.cs
 /Ielts-System/Service/bin
 /Ielts-System/DAL/obj
 /Ielts-System/Repository/bin
+/Ielts-System/BusinessObject/obj
+/Ielts-System/BusinessObject/obj

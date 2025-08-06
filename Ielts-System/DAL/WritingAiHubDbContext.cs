@@ -47,6 +47,9 @@ public partial class WritingAiHubDbContext : DbContext
             entity.Property(e => e.Username)
                 .HasMaxLength(100)
                 .HasColumnName("username");
+            entity.Property(e => e.CreatedAt)
+           .HasColumnName("createdat")
+           .HasColumnType("timestamp with time zone");
         });
 
         OnModelCreatingPartial(modelBuilder);

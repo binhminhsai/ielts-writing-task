@@ -319,7 +319,7 @@ export default function MyAccount() {
                         Ngày tham gia
                       </Label>
                       <div className="bg-white border border-gray-200 rounded-lg p-4 text-gray-900 font-medium">
-                        Tháng 1, 2025
+                        {user.createAt}
                       </div>
                     </div>
 
