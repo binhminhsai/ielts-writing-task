@@ -14,5 +14,8 @@ public partial class User
     public string? Password { get; set; }
 
     public string? Role { get; set; }
-    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? Createdat { get; set; }
+
+    public virtual ICollection<WritingTask1> WritingTask1s { get; set; } = new List<WritingTask1>();
 }

@@ -1,5 +1,5 @@
 // AuthService.ts
-const API_BASE_URL = 'https://localhost:7279/api/Auth';
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND}/api/Auth`;
 
 interface LoginResponse {
   token: string;
