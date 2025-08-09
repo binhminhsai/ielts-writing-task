@@ -98,7 +98,7 @@ function Task1OutlineSection({
       }
 
       const config = JSON.parse(task1Config);
-
+     
       // Prepare POST request payload
       const requestBody = {
         question: config.question,
@@ -219,8 +219,7 @@ function Task1OutlineSection({
                             <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
                           </div>
                         ) : (
-                          data?.sample?.task1_outline
-                            ?.paragraph_1_introduction ||
+                          data?.sample?.paragraph_1_introduction ||
                           "No introduction available"
                         )}
                       </div>
@@ -249,7 +248,7 @@ function Task1OutlineSection({
                             <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
                           </div>
                         ) : (
-                          data?.sample?.task1_outline?.paragraph_2_overview ||
+                          data?.sample?.paragraph_2_overview ||
                           "No overview available"
                         )}
                       </div>
@@ -279,8 +278,7 @@ function Task1OutlineSection({
                             <div className="h-3 bg-gray-200 rounded animate-pulse w-5/6"></div>
                           </div>
                         ) : (
-                          data?.sample?.task1_outline
-                            ?.paragraph_3_first_main_feature ||
+                          data?.sample?.paragraph_3_first_main_feature ||
                           "No first main feature available"
                         )}
                       </div>
@@ -310,8 +308,7 @@ function Task1OutlineSection({
                             <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
                           </div>
                         ) : (
-                          data?.sample?.task1_outline
-                            ?.paragraph_4_second_main_feature ||
+                          data?.sample?.paragraph_4_second_main_feature ||
                           "No second main feature available"
                         )}
                       </div>
@@ -401,7 +398,7 @@ function Task1OutlineSection({
                                   Chart Type:
                                 </span>{" "}
                                 {
-                                  data?.analyze_question?.task1_analysis?.[
+                                  data?.analyze_question?.[
                                     "1_image_description"
                                   ]?.chart_type
                                 }
@@ -414,7 +411,7 @@ function Task1OutlineSection({
                                   Main Subject:
                                 </span>{" "}
                                 {
-                                  data?.analyze_question?.task1_analysis?.[
+                                  data?.analyze_question?.[
                                     "1_image_description"
                                   ]?.main_subject
                                 }
@@ -427,7 +424,7 @@ function Task1OutlineSection({
                                   Unit of Measurement:
                                 </span>{" "}
                                 {
-                                  data?.analyze_question?.task1_analysis?.[
+                                  data?.analyze_question?.[
                                     "1_image_description"
                                   ]?.unit_measurement
                                 }
@@ -440,7 +437,7 @@ function Task1OutlineSection({
                                   Time Period:
                                 </span>{" "}
                                 {
-                                  data?.analyze_question?.task1_analysis?.[
+                                  data?.analyze_question?.[
                                     "1_image_description"
                                   ]?.time_period
                                 }
@@ -453,7 +450,7 @@ function Task1OutlineSection({
                                   Verb Tense Used:
                                 </span>{" "}
                                 {
-                                  data?.analyze_question?.task1_analysis?.[
+                                  data?.analyze_question?.[
                                     "1_image_description"
                                   ]?.verb_tense
                                 }
@@ -466,7 +463,7 @@ function Task1OutlineSection({
                                   Chart Summary:
                                 </span>{" "}
                                 {
-                                  data?.analyze_question?.task1_analysis?.[
+                                  data?.analyze_question?.[
                                     "1_image_description"
                                   ]?.chart_summary
                                 }
@@ -505,7 +502,7 @@ function Task1OutlineSection({
                               </p>
                               <p className="text-xs text-[#374151]">
                                 {
-                                  data?.analyze_question?.task1_analysis?.[
+                                  data?.analyze_question?.[
                                     "2_analyse_question"
                                   ]?.question_requirement
                                 }
@@ -516,7 +513,7 @@ function Task1OutlineSection({
                                 Key Tasks:
                               </p>
                               <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                                {data?.analyze_question?.task1_analysis?.[
+                                {data?.analyze_question?.[
                                   "2_analyse_question"
                                 ]?.key_tasks?.map((task, index) => (
                                   <li
@@ -545,7 +542,7 @@ function Task1OutlineSection({
                               </p>
                               <p className="text-xs text-[#374151]">
                                 {
-                                  data?.analyze_question?.task1_analysis?.[
+                                  data?.analyze_question?.[
                                     "2_analyse_question"
                                   ]?.band_guidance
                                 }
@@ -584,7 +581,7 @@ function Task1OutlineSection({
                                 Overall Trends:
                               </p>
                               <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                                {data?.analyze_question?.task1_analysis?.[
+                                {data?.analyze_question?.[
                                   "3_identify_main_features"
                                 ]?.overall_trends?.map((trend, index) => (
                                   <li
@@ -609,7 +606,7 @@ function Task1OutlineSection({
                                 Key Data Points:
                               </p>
                               <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                                {data?.analyze_question?.task1_analysis?.[
+                                {data?.analyze_question?.[
                                   "3_identify_main_features"
                                 ]?.key_data_points?.map((point, index) => (
                                   <li
@@ -634,7 +631,7 @@ function Task1OutlineSection({
                                 Significant Changes:
                               </p>
                               <ul className="text-xs text-[#374151] space-y-1 ml-3">
-                                {data?.analyze_question?.task1_analysis?.[
+                                {data?.analyze_question?.[
                                   "3_identify_main_features"
                                 ]?.significant_changes?.map((change, index) => (
                                   <li
@@ -679,7 +676,7 @@ function Task1OutlineSection({
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            {data?.analyze_question?.task1_analysis?.[
+                            {data?.analyze_question?.[
                               "4_jobs_to_done"
                             ]?.map((job, index) => (
                               <div
@@ -1427,9 +1424,7 @@ export default function Task1WritingInterface({
         </div>
       </div>
 
-      <div className="mt-4 lg:hidden">
-        <Task1OutlineSection questionType={questionType} question={question} />
-      </div>
+
 
       {/* Resources Section Below */}
       <Task1ResourcesSection questionType={questionType} />

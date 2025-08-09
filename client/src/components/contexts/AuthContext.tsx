@@ -5,16 +5,22 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+import { AuthService } from "@/Service/AuthService";
+import { useToast } from "@/hooks/use-toast";
 
 interface User {
   email: string;
   name: string;
+  userId?: string;
+  role?: string;
+  createAt?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (username: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -36,61 +42,119 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Temporary credentials
-  const TEMP_CREDENTIALS = {
-    email: "nguyen123@gmail.com",
-    password: "Nguyen123@",
-    name: "Nguyen Tran",
-  };
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
+    const initializeAuth = async () => {
+      const token = AuthService.getToken();
+      if (token) {
+        try {
+          const profile = await AuthService.getProfile(token);
+          setUser({
+            email: profile.email,
+            name: profile.username,
+            userId: profile.userId,
+            role: profile.role,
+            createAt: profile.createdAt
+          });
+        } catch (error) {
+          console.error("Failed to fetch user profile:", error);
+          AuthService.removeToken();
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Check against temporary credentials
-    if (
-      email === TEMP_CREDENTIALS.email &&
-      password === TEMP_CREDENTIALS.password
-    ) {
-      const userData = {
-        email: TEMP_CREDENTIALS.email,
-        name: TEMP_CREDENTIALS.name,
-      };
-
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      setIsLoading(false);
+    
+    try {
+      const response = await AuthService.login(email, password);
+      
+      AuthService.storeToken(response.token);
+      
+      const profile = await AuthService.getProfile(response.token);
+      
+      setUser({
+        email: profile.email,
+        name: profile.username,
+        userId: profile.userId,
+        role: profile.role,
+        createAt: profile.createdAt
+      });
+      
       return true;
+    } catch (error) {
+      console.error("Login failed:", error);
+      let errorMessage = "Login failed";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({
+        title: "Login Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    setIsLoading(false);
-    return false;
+  const register = async (username: string, email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    
+    try {
+      const response = await AuthService.register(username, email, password);
+      
+      toast({
+        title: "Registration Successful",
+        description: response.message || "Account created successfully",
+        variant: "default",
+      });
+      
+      // Optionally auto-login after registration
+      // return await login(email, password);
+      
+      return true;
+    } catch (error) {
+      console.error("Registration failed:", error);
+      let errorMessage = "Registration failed";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({
+        title: "Registration Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
+    AuthService.removeToken();
     setUser(null);
-    localStorage.removeItem("user");
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out",
+      variant: "default",
+    });
   };
 
   const value = {
     user,
     isAuthenticated: !!user,
     login,
+    register,
     logout,
     isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+};  
